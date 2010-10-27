@@ -19,6 +19,8 @@ Components from DigiKey
 Components from SparkFun
   * Sparkfun male right-angle header PRT-00553 			$ 1.95
 
+Board from BatchPCB
+  http://batchpcb.com/index.php/Products/41628
 Components from CDI
 
    ITG-3200 3-axis Gyro $10 + $7.43 shipping		        $ 17.43
