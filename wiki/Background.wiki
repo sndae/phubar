@@ -1,4 +1,4 @@
-==Background==
+
 
 The software uses five of the eight available cogs of the Propeller chip.
 
