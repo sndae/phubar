@@ -1,0 +1,13 @@
+==Background==
+
+The software uses five of the eight available cogs of the Propeller chip.
+
+There is one body of code for both the 2-axis PhuBar2 and the 3-axis PhuBar3.  The file Constants.spin has a version switch that can be set to either 2 or 3 to select which code is invoked.  
+
+Discussion of the development of PhuBar2 and subsequent PhuBar3, with flight test videos, can be found in an RCGroups thread here:
+
+http://www.rcgroups.com/forums/showthread.php?t=1233263
+
+More detail about PhuBar2 can be found here:
+
+http://www.rcgroups.com/forums/member.php?u=187518    (Scroll to the very bottom to see the earliest blog entries)
