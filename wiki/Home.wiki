@@ -1,7 +1,11 @@
 =*PhuBar*=
 
-PhuBar is a platform for developing stabilizer devices for micro-sized R/C helicopters.
+PhuBar is a platform for developing stabilizer devices for micro-sized R/C helicopters.  It is based on the Parallax Propeller processor and the ITG-3200 3-axis gyro chip.  It is not intended to be a UAV controller or inertial navigation unit.  It simply provides stabilization similar to that of a physical weighted flybar, making small helicopters easier to fly. 
 
 http://static.rcgroups.net/forums/attachments/1/8/7/5/1/8/a3559599-40-PhuBar3ShrinkWrap.JPG
 
 PhuBar3 in heat-shrink covering
+
+==*Features*==
+
+The code currently provides the following features:
