@@ -7,7 +7,7 @@ Components from DigiKey
  * 10 P4.7KACT-ND RES 4.7K OHM 1/10W 5% 0805 SMD 		$0.77
  * 10 RHM10KARCT-ND RES 10.0K OHM 1/10W 5% 0805 SMD 		$0.34
  * 1  P8X32A-Q44-ND IC PROPELLER 8 32BIT COGS 44LQFP 		$7.99
- * 1  TC1262-3.3VDB-NDIC REG 500MA SOT223-3		        $0.56
+ * 1  TC1262-3.3VDB-NDIC REG 500MA SOT223-3		        $0.56   (or substitute 1 LT1521CST-3.3#PBF-ND  IC REG 300MA SOT223-3 $4.13)         
  * 1  24FC512-I/SN-ND IC EEPROM 512KBIT 400KHZ 8SOIC  		$2.08
  * 1  X410-ND CRYSTAL 5.000 MHZ 20PF 49US   			$1.16
  * 10 399-3138-1-ND CAP CERAMIC 10UF 6.3V X5R 0805 		$2.42
@@ -17,8 +17,7 @@ Components from DigiKey
  * 1  160-1782-ND  3mm White LED					$0.39
 
 Components from SparkFun
-  BatchPCB "PhuBar3" PCB $3.36 + $10 setup +$.88 shipping       $14.24
-  Sparkfun male right-angle header PRT-00553 			$ 1.95
+  * Sparkfun male right-angle header PRT-00553 			$ 1.95
 
 Components from CDI
 
