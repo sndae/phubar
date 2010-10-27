@@ -1,7 +1,13 @@
+The software uses five of the eight available cogs of the Propeller chip. A sixth is used only in setup mode when a PropPlug is connected, or when running ViewPort for debugging.
 
-The software uses five of the eight available cogs of the Propeller chip.
+ * Main update loop
+ * Receiver input processing
+ * Servo output processing
+ * Gyro input processing
+ * Spin Interpreter
+ * Serial I/O to terminal (during setup/debug only)
 
-There is one body of code for both the 2-axis PhuBar2 and the 3-axis PhuBar3.  The file Constants.spin has a version switch that can be set to either 2 or 3 to select which code is invoked. 
+There is a single combined body of source code for both the 2-axis PhuBar2 and the 3-axis PhuBar3.  The file Constants.spin has a version switch that can be set to either 2 or 3 to select which code is invoked. 
 
 Most of the components are surface-mount devices.  The ITG-3200 is a QFN chip 4mmx4mm square, requiring fine soldering tools and skills that may be beyond the average hobbyist. 
 
