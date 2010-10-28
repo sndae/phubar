@@ -25,7 +25,7 @@ Components from SparkFun
 Printed Circuit Board from BatchPCB
   http://batchpcb.com/index.php/Products/41628
 
-Components from CDI
+Components from CDI http://www.cdiweb.com/PortalProductDetail.aspx?ProdId=405256
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||ITG-3200 3-axis Gyro $10 + $7.43 shipping||	     $ 17.43||
   NOTE: This is a very tiny QFN device requiring special soldering tools	
