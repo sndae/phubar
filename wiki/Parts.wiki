@@ -1,6 +1,6 @@
-Parts needed to build PhuBar3:
+==Parts needed to build PhuBar3:==
 
-Components from DigiKey (some have 10-item minimum)
+===Components from DigiKey (some have 10-item minimum)===
 
 ||*Quantity*||*Part Number*||*Cost*||
 ||10 ||P33KACT-ND RES 33K OHM 1/8W 5% 0805 SMD        ||$0.77||
@@ -18,19 +18,20 @@ Components from DigiKey (some have 10-item minimum)
 || 10 ||490-1664-1-ND CAP CER 10000PF 50V 10% X7R 0805||$0.28||
 ||  1  ||160-1782-ND  3mm White LED||			$0.39||
 
-Components from SparkFun
+===Components from SparkFun===
 ||*Quantity*||*Part Number*||*Cost*||
 ||1|| Sparkfun male right-angle header PRT-00553|| 	$ 1.95||
 
-Printed Circuit Board from BatchPCB
+===Printed Circuit Board from BatchPCB===
   http://batchpcb.com/index.php/Products/41628
 
-Components from CDI http://www.cdiweb.com/PortalProductDetail.aspx?ProdId=405256
+===Components from CDI===
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||ITG-3200 3-axis Gyro $10 + $7.43 shipping||	     $ 17.43||
   NOTE: This is a very tiny QFN device requiring special soldering tools	
+    http://www.cdiweb.com/PortalProductDetail.aspx?ProdId=405256
 
-Components from Parallax
+===Components from Parallax===
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||  Parallax PropPlug + usb cable + shipping||	$ 16.56||
 
