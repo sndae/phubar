@@ -15,6 +15,6 @@ Discussion of the development of PhuBar2 and subsequent PhuBar3, with flight tes
 
 http://www.rcgroups.com/forums/showthread.php?t=1233263
 
-More detail about PhuBar2 can be found here:
+More detail about PhuBar2 (2-axis) can be found here:
 
 http://www.rcgroups.com/forums/member.php?u=187518    (Scroll to the very bottom to see the earliest blog entries)
