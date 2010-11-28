@@ -1,9 +1,17 @@
 {
   Global Constants used in multiple objects
+
+  Accessors allow switching between PhuBar2 hardware and PhuBar3 hardware
+  by changing the value of HARDWARE_VERSION 
 }
 
 
 CON
+
+  HARDWARE_VERSION     = 3      ' 2 is PhuBar2 2-axis.   3 is PhuBar3 3-axis
+                                ' This is the main switch to change when going
+                                ' back and forth maintaining the two versions
+ 
   STATUS_LED_PIN       = 3   'LED to signal status of PhUBar
   SERIAL_TX_PIN        = 30
   SERIAL_RX_PIN        = 31
@@ -13,10 +21,7 @@ CON
   SWASH_YAW_INCREMENT  = 2      ' Degrees we must yaw before we bother with
                                 ' using yaw to rotate pitch and roll values                            
 
-  HARDWARE_VERSION     = 3      ' 2 is PhuBar2 2-axis.   3 is PhuBar3 3-axis
-                                ' This is the main switch to change when going
-                                ' back and forth maintaining the two versions
-  
+ 
   PB2_EEPROMOffset     = $0000  ' $0000 for 32kb eeprom,  $8000 for 64kb eeprom.
                                 ' If 64kb eeprom is present, changing this offset
                                 ' to $8000 allows PhuBar setup parameters to persist
@@ -28,24 +33,35 @@ CON
   PB3_EEPROMPageSize   = 128
                                 
   PB2_RX_AILERON_PIN   = 18     'PhuBar2 pin assignments   
-  PB2_RX_ELEVATOR_PIN  = 17     
+  PB2_RX_ELEVATOR_PIN  = 17     'PINMASK must match these pin assignments
   PB2_RX_AUX_PIN       = 16
   PB2_RX_RUDDER_PIN    = 15
   PB2_SERVO_1_PIN      = 14
   PB2_SERVO_2_PIN      = 13
   PB2_SERVO_3_PIN      = 12
   PB2_SERVO_4_PIN      = 11
-  
+  PB2_PINMASK          = %0000_0111_1000_0000_0000_0000  ' Mask for RC_receiver.spin
+  PB2_RX_RUDDER_OFFSET = 0
+  PB2_RX_AUX_OFFSET      = PB2_RX_AUX_PIN       - PB2_RX_RUDDER_PIN  ' Offsets into Pins[8] of RC_Receiver.spin
+  PB2_RX_ELEVATOR_OFFSET = PB2_RX_ELEVATOR_PIN  - PB2_RX_RUDDER_PIN 
+  PB2_RX_AILERON_OFFSET  = PB2_RX_AILERON_PIN   - PB2_RX_RUDDER_PIN 
+
+
                                 
   PB3_RX_AILERON_PIN   = 21    ' Pin assignments changed from PhuBar2 to PhuBar3
   PB3_RX_ELEVATOR_PIN  = 20    ' in order to make the pcb smaller
-  PB3_RX_AUX_PIN       = 19
+  PB3_RX_AUX_PIN       = 19    ' PINMASK must match these pin assignments 
   PB3_RX_RUDDER_PIN    = 16
   PB3_SERVO_1_PIN      = 15
   PB3_SERVO_2_PIN      = 11
   PB3_SERVO_3_PIN      = 10
   PB3_SERVO_4_PIN      = 9
-  
+  PB3_PINMASK          = %0011_1001_0000_0000_0000_0000
+  PB3_RX_RUDDER_OFFSET = 0
+  PB3_RX_AUX_OFFSET      = PB3_RX_AUX_PIN       - PB3_RX_RUDDER_PIN  ' Offsets into Pins[8] of RC_Receiver.spin
+  PB3_RX_ELEVATOR_OFFSET = PB3_RX_ELEVATOR_PIN  - PB3_RX_RUDDER_PIN 
+  PB3_RX_AILERON_OFFSET  = PB3_RX_AILERON_PIN   - PB3_RX_RUDDER_PIN 
+    
   PB2_NOISE            = 2
   PB2_SAMPLE_RATE_HZ   = 100
   PB2_ANGULAR_LIMIT    = 52_000  '52000 equates to roughly 45 degrees, the limit
@@ -61,6 +77,37 @@ CON
                                     '  to MultiParms.spin
   PB3_EEPROM_PARMS_START   = 32769  'start of top half of 64kbyte eeprom
     
+PUB GetPINMASK
+  if(HARDWARE_VERSION  == 2)
+    return  PB2_PINMASK
+  else
+    return  PB3_PINMASK
+
+PUB GetRX_RUDDER_OFFSET
+  if(HARDWARE_VERSION  == 2)
+    return  PB2_RX_RUDDER_OFFSET
+  else
+    return  PB3_RX_RUDDER_OFFSET
+    
+PUB GetRX_AUX_OFFSET
+  if(HARDWARE_VERSION  == 2)
+    return  PB2_RX_AUX_OFFSET
+  else
+    return  PB3_RX_AUX_OFFSET
+ 
+PUB GetRX_ELEVATOR_OFFSET
+  if(HARDWARE_VERSION  == 2)
+    return  PB2_RX_ELEVATOR_OFFSET
+  else
+    return  PB3_RX_ELEVATOR_OFFSET
+ 
+PUB GetRX_AILERON_OFFSET
+  if(HARDWARE_VERSION  == 2)
+    return  PB2_RX_AILERON_OFFSET
+  else
+    return  PB3_RX_AILERON_OFFSET
+ 
+
 PUB GetNOISE
   if(HARDWARE_VERSION  == 2)
     return  PB2_NOISE
