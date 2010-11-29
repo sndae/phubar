@@ -18,7 +18,7 @@ Following are PhuBar3 parameter settings that have been shown to result in stabl
 || || *Physical specs that affect mechanical gain* ||
 ||Tail Rotor Control Arm Ratio ||Leverage ratio of tail bellcrank||N/A  ||2.6  ||1.25  ||
 ||Tail Servo Horn Length ||Distance from horn screw to link ball screw||N/A  ||11mm  ||7mm  ||
-||Main Rotor Pitch Arm Length ||Blade holder arm length, link ball to mast||17mm  ||12mm  ||14mm  ||
+||Main Rotor Pitch Arm Length ||Distance, link ball to main shaft centerline||17mm  ||12mm  ||14mm  ||
 ||HeadSpeed ||       || Var ||3000 rpm  ||4000 rpm  ||
 
 
