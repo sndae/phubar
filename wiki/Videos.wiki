@@ -1,5 +1,4 @@
-
-Video of CopterX 250Se with PhuBar3 running software version 3.3
+Video clips of CopterX 250SE with PhuBar3 running software version 3.3
 
 <wiki:video url="http://www.youtube.com/watch?v=8fUkXNvDBcA" width=640 height=505/>
 
