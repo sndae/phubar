@@ -1,3 +1,5 @@
+#summary List of parts needed to build a PhuBar3
+
 ==Parts needed to build PhuBar3:==
 
 ===Components from DigiKey (some have 10-item minimum)===
