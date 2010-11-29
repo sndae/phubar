@@ -8,16 +8,16 @@ Following are PhuBar3 parameter settings that have been shown to result in stabl
 ||Servo 1 Theta Angle ||Location of servo1 on swashplate||0  ||-60  ||-60  ||
 ||Servo 2 Theta Angle ||Location of servo2 on swashplate||-270  ||-180  ||-180  ||
 ||Servo 3 Theta Angle ||Location of servo3 on swashplate||0  ||-300  ||-300  ||
-||Pitch Rate Gain || Rate gain on pitch axis ||  ||21  ||17  ||
-||Pitch Angular Gain || Angular Gain on Pitch axis ||  ||63  ||85  ||
-||Roll Rate Gain ||Rate Gain on Roll axis ||  ||21  ||17  ||
-||Roll Angular Gain ||Angular Gain on Roll axis ||  ||63  ||85  ||
-||Angular Decay ||Decay rate of angular compensation ||  ||100  ||100  ||
+||Pitch Rate Gain || Rate gain on pitch axis ||14  ||21  ||17  ||
+||Pitch Angular Gain || Angular Gain on Pitch axis ||60  ||63  ||85  ||
+||Roll Rate Gain ||Rate Gain on Roll axis ||14  ||21  ||17  ||
+||Roll Angular Gain ||Angular Gain on Roll axis ||60  ||63  ||85  ||
+||Angular Decay ||Decay rate of angular compensation ||95  ||100  ||100  ||
 ||Phase Angle ||Phase offset of swash inputs from forward=0 ||-45  ||-45  ||-45  ||
 ||Yaw Rate Gain ||Rate gain on yaw (tail) axis ||  ||  ||  ||
 ||Yaw Angular Gain ||Angular gain on yaw axis ||  ||  ||  ||
 || || ||  ||  ||  ||
-|| ||Physical specs that affect mechanical gain||
+|| || *Physical specs that affect mechanical gain* ||
 ||Tail Rotor Control Arm Ratio ||Leverage ratio of tail bellcrank||  ||  ||  ||
 ||Tail Servo Horn Length ||Distance from horn screw to link ball||  ||  ||  ||
 ||Main Rotor Pitch Arm Length ||Blade holder arm length, link ball to mast||  ||  ||  ||
@@ -26,3 +26,4 @@ Following are PhuBar3 parameter settings that have been shown to result in stabl
 
 
   HBFP = HoneyBee FP with blades trimmed at trailing edge to increase headspeed
+         The HBFP testing used a PhuBar2
