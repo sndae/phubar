@@ -1,6 +1,6 @@
 ==Parameter Settings for Some Common Helicopters==
 
-Following are PhuBar3 parameter settings that have been shown to result in stable, controllable flight on various helicopters.  Some parameters are not show here because they are either a matter of personal preference, or are taken care of by the auto-setup features.  Gain settings can vary if the physical specs of your helicopter vary from those shown below.
+Following are PhuBar3 parameter settings that have been shown to result in stable, controllable flight on various helicopters.  Some parameters are not show here because they are either a matter of personal preference, or are handled by the auto-setup features.  Gain settings can vary if the physical specs of your helicopter vary from those shown below.
 
 || *Parameter* || *Description* || *HBFP* || *FireFox Ep200* || *CopterX 250SE* ||
 ||Servo 1 Theta Angle ||Location of servo1 on swashplate||0  ||-60  ||-60  ||
