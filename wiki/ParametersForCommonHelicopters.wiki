@@ -1,0 +1,15 @@
+
+==Parameter Settings for Some Common Helicopters==
+
+==Under Construction==
+
+|| *Parameter* || *Description* || *HBFP* || *FireFox Ep200* || *CopterX 250SE* ||
+||Servo 1 Theta Angle ||       ||  ||  ||  ||
+||Servo 2 Theta Angle ||       ||  ||  ||  ||
+||Servo 3 Theta Angle ||       ||  ||  ||  ||
+|| ||Physical specs that affect mechanical gain||
+||Tail Rotor Control Arm Ratio ||       ||  ||  ||  ||
+||Tail Servo Horn Length ||       ||  ||  ||  ||
+||HeadSpeed ||       ||  ||  ||  ||
+
+
