@@ -39,4 +39,8 @@
 Optional right-angle header from AeroQuad
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||8-pos 3-row header at AeroQuad+shipping||		$ 4.20|| 
+
+===Components from Tubing Express===
+Clear 54mm lay-flat heatshrink tubing                   $ 9.90 for 5 feet
+   http://stores.ebay.com/TUBING-EXPRESS
          
