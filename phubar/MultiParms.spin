@@ -55,7 +55,7 @@ VAR
   long  angularDecay[10], phaseAngle[10], pulseInterval[10] 
   long  flags[10]                                            'flags holds 32 switches for reversals, etc
   long  servo1theta[10], servo2theta[10], servo3theta[10]   
-  long  yawangularGain[10], yawRateGain[10] 
+  long  yawAngularGain[10], yawRateGain[10] 
   long  gyroXAxisAssignment[10], gyroYAxisAssignment[10], gyroZAxisAssignment[10]
   long  headingHoldDeadband[10]
   long  swashRing[10]
@@ -246,7 +246,7 @@ PUB Initialize
 
 PUB InitNewParms | index
  ' Initialize any new parms that may have been added since last release
- 
+ '  only if they are outside acceptable range
   repeat index from 0 to MAX_MODELS-1
      if((swashRing[index] < MIN_SWASH_RING) or (swashRing[index] > MAX_SWASH_RING))
          swashRing[index] := 50 
@@ -268,7 +268,7 @@ PUB CopyModelName(fm, tm) | index
  byte[@modelName[tm*4]][index]~
             
 PUB SetDefaults   | index
-  
+            
   'Set parameters to defaults
   '----------------------------------------------------
   '  Settings for various helis, assumes PhuBar2 is mounted
@@ -336,7 +336,7 @@ PUB SetDefaults   | index
   pulseInterval[9]       := 10        ' servo pulse interval
   gyroXAxisAssignment[9] := "Y"       ' assign axes based on how the unit is
   gyroYAxisAssignment[9] := "R"       ' oriented in the aircraft     
-  servo1theta[9]         := -60       'Negative angles are clockwise from nose=0 when looking
+  servo1theta[9]         := -60       ' Negative angles are clockwise from nose=0 when looking
   servo2theta[9]         := -180      ' down on rotor mast
   servo3theta[9]         := -300
   yawAngularGain[9]      := 45        ' 0 to 100 
@@ -466,7 +466,7 @@ PRI DumpSetupParameters
     
 
                
-PRI EditParameters | response, memUsed
+PRI EditParameters | response
   '---------------------------------------------------------------------------------
   ' Use Robert Quattlebaum's Settings object to store/retrieve parameters in eeprom
   '  allowing user to edit them via serial/USB to serial terminal tool
@@ -475,7 +475,10 @@ PRI EditParameters | response, memUsed
   lastModelIndex := activeModelIndex
 
   serio.tx($D)
-  serio.str(string("(u)sb or push a button on LCD"))
+  serio.str(string("PhuBar v"))
+  serio.str(constants.SoftwareVersion)
+  serio.tx($D)
+  serio.str(string("return or button"))
   serio.tx($D)
   response := RXorDisconnect
     
