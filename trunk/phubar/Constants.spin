@@ -1,32 +1,47 @@
-{
+{{
   Global Constants used in multiple objects
 
   Accessors allow switching between PhuBar2 hardware and PhuBar3 hardware
-  by changing the value of HARDWARE_VERSION 
+  by changing the value of HARDWARE_VERSION
+   
+}}
+
+
+PUB SoftwareVersion
+   return string("3.3.2")   'Current version 
+
+{    Versions
+         3.3.2 RC_Receiver.spin now replaces MonitorRCReceiver.spin.
+               Expected to cover a wider range of receivers.  Handles overlapping pulses
+               across channels with 1us resolution
+         3.3.1 Fix motion detect on gyro calibrate
+         3.3   Swash Ring feature added  
+         3.2   Model Copy function added
+         3.1   Added ProcessYaw to give rate mode and HH mode to tail
+               Added ability to store parameters for 10 helicopters in
+               eeprom, provided a 64kbyte eeprom is on the board
+         3.0   Upgrade to ITG-3200 3-axis gyro (Still supports IDG-500 for PhuBar2 also)
+               Added support for parameter changes via TextStar LCD terminal
+         2.0   Version using IDG-500 2-axis gyro, cyclic stabilization only,
+               no tail control
 }
-
-
+  
 CON
-
-  HARDWARE_VERSION     = 3      ' 2 is PhuBar2 2-axis.   3 is PhuBar3 3-axis
-                                ' This is the main switch to change when going
-                                ' back and forth maintaining the two versions
+  HARDWARE_VERSION     = 3        ' 2 is PhuBar2 2-axis.   3 is PhuBar3 3-axis
+                                  ' This is the main switch to change when going
+                                  ' back and forth maintaining the two versions
  
-  STATUS_LED_PIN       = 3   'LED to signal status of PhUBar
+  STATUS_LED_PIN       = 3        ' LED to signal status of PhuBar
   SERIAL_TX_PIN        = 30
   SERIAL_RX_PIN        = 31
 
-  YAW_LIMIT            = 244_000  'Equates to about 180 degrees of yaw travel
-                                  'that we track before we stop integrating it
-  SWASH_YAW_INCREMENT  = 2      ' Degrees we must yaw before we bother with
-                                ' using yaw to rotate pitch and roll values                            
+  YAW_LIMIT            = 244_000  ' Equates to about 180 degrees of yaw travel
+                                  ' that we track before we stop integrating it
+  SWASH_YAW_INCREMENT  = 2        ' Degrees we must yaw before we bother with
+                                  ' using yaw to rotate pitch and roll values                            
 
- 
-  PB2_EEPROMOffset     = $0000  ' $0000 for 32kb eeprom,  $8000 for 64kb eeprom.
-                                ' If 64kb eeprom is present, changing this offset
-                                ' to $8000 allows PhuBar setup parameters to persist
-                                ' between firmware updates.
-  PB3_EEPROMOffset     = $8000
+  PB2_EEPROMOffset     = $0000    ' $0000 for 32kb eeprom 
+  PB3_EEPROMOffset     = $8000    ' $8000 for 64kb eeprom
 
   PB2_EEPROMPageSize   = 64
 
@@ -188,7 +203,7 @@ PUB GetSERVO_4_PIN
 
 
 PUB  getEEPROM_PARMS_START
- if(HARDWARE_VERSION     == 2)
+ if(HARDWARE_VERSION  == 2)
     return PB2_EEPROM_PARMS_START
  else
     return PB3_EEPROM_PARMS_START
