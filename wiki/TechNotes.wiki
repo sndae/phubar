@@ -1,3 +1,4 @@
+#summary General design notes and opportunities for others to contribute
 ===Design===
 The example code uses five of the eight available cogs of the Propeller chip. A sixth is used only in setup mode when a PropPlug is connected, or when running ViewPort for debugging.
 
