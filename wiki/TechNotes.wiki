@@ -15,8 +15,7 @@ Most of the components are surface-mount devices.  The ITG-3200 is a QFN chip 4m
 While the Propeller chip normally uses a 32kb eeprom for storing of software, the PhuBar3 uses a 64kb eeprom so that user-set parameters can reside in the upper 32kb.  This way, the parameters for multiple helicopters can be retained even when software updates are loaded into eeprom, since the Propeller tool only loads the lower 32kb. 
 
 Before version 3.2.2 of the code, it was assumed that pulses from the 4 reciever channels arrived sequentially and did not overlap, as with Spektrum receivers.  Version 3.3.2 was changed to read the channels using PASM assembler code so it could handle overlapping pulses.  Some receivers have high-speed modes that cause pulses on one channel to overlap pulses on other channels. 
-
-
+<br><br>
 
 ===Other Resources===
 Discussion of the development of PhuBar2 and subsequent PhuBar3, with flight test videos, can be found in an RCGroups thread here:
@@ -26,9 +25,7 @@ http://www.rcgroups.com/forums/showthread.php?t=1233263
 More detail about PhuBar2 (2-axis) can be found here:
 
 http://www.rcgroups.com/forums/member.php?u=187518    (Scroll to the very bottom to see the earliest blog entries)
-
-
-
+<br><br>
 
 ===Opportunities for others to contribute:===
  * Improve tail servo handling with features found in high-end tail gyros
