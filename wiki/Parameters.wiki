@@ -16,6 +16,7 @@ Following are PhuBar3 parameter settings that have been shown to result in stabl
 ||Yaw Angular Gain ||Angular gain on yaw axis ||N/A  ||45  ||17  ||
 || || ||  ||  ||  ||
 || || *Physical specs that affect mechanical gain* ||
+|| Head Setup || Flybarred (FB) or Flybarless (FBL) || FBL || FBL || FBL ||
 ||Tail Rotor Control Arm Ratio ||Leverage ratio of tail bellcrank||N/A  ||2.6  ||1.25  ||
 ||Tail Servo Horn Length ||Distance from horn screw to link ball screw||N/A  ||11mm  ||7mm  ||
 ||Main Rotor Pitch Arm Length ||Distance, link ball to main shaft centerline||17mm  ||12mm  ||14mm  ||
