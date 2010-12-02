@@ -15,7 +15,7 @@ Most of the components are surface-mount devices.  The ITG-3200 is a QFN chip 4m
 
 While the Propeller chip normally uses a 32kb eeprom for storing of software, the PhuBar3 uses a 64kb eeprom so that user-set parameters can reside in the upper 32kb.  This way, the parameters for multiple helicopters can be retained even when software updates are loaded into eeprom, since the Propeller tool only loads the lower 32kb. 
 
-Before version 3.2.2 of the code, it was assumed that pulses from the 4 reciever channels arrived sequentially and did not overlap, as with Spektrum receivers.  Version 3.3.2 was changed to read the channels using PASM assembler code so it could handle overlapping pulses.  Some receivers have high-speed modes that cause pulses on one channel to overlap pulses on other channels. 
+Before version 3.3.2 of the code, it was assumed that pulses from the 4 reciever channels arrived sequentially and did not overlap, as with Spektrum receivers.  Version 3.3.2 was changed to read the channels using PASM assembler code so it could handle overlapping pulses.  Some receivers have high-speed modes that cause pulses on one channel to overlap pulses on other channels. 
 
 Servo output and receiver inputs are all assumed to be R/C standard PWM pulse trains with pulse width range of 1-2ms.  Servo pulse interval can be adjusted from 10ms to 20ms, and reciever pulse interval on each channel can be any value greater than 1 microsecond.  Resolution on receiver input is about 1 microsecond which works out to 1000 steps over the 1ms pulse width range. 
 <br><br>
