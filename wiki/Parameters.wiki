@@ -27,6 +27,8 @@ Following are PhuBar3 parameter settings that have been shown to result in stabl
   HBFP = HoneyBee FP with blades trimmed at trailing edge to increase headspeed
          The HBFP testing used a PhuBar2
 
+  The Blade CP was flown with a PhuBar2
+
   For a discussion of Tail Rotor Control Arm Ratio, see:
         http://www.rcgroups.com/forums/showthread.php?t=1333962#post16476772
 
