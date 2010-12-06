@@ -2,21 +2,21 @@
 
 Following are PhuBar3 parameter settings that have been shown to result in stable, controllable flight on various helicopters.  Some parameters are not show here because they are either a matter of personal preference, or are handled by the auto-setup features.  Gain settings can vary if the physical specs of your helicopter vary from those shown below.
 
-|| *Parameter* || *Description* || *HBFP* || *FireFox Ep200* || *CopterX 250SE* ||
-||Servo 1 Theta Angle ||Location of servo1 on swashplate||0  ||-60  ||-60  ||
-||Servo 2 Theta Angle ||Location of servo2 on swashplate||-270  ||-180  ||-180  ||
-||Servo 3 Theta Angle ||Location of servo3 on swashplate||0  ||-300  ||-300  ||
-||Pitch Rate Gain || Rate gain on pitch axis ||14  ||21  ||17  ||
-||Pitch Angular Gain || Angular Gain on Pitch axis ||60  ||63  ||85  ||
-||Roll Rate Gain ||Rate Gain on Roll axis ||14  ||21  ||17  ||
-||Roll Angular Gain ||Angular Gain on Roll axis ||60  ||63  ||85  ||
-||Angular Decay ||Decay rate of angular compensation ||95  ||100  ||100  ||
-||Phase Angle ||Phase offset of swash inputs from forward=0 ||-45  ||-45  ||-45  ||
-||Yaw Rate Gain ||Rate gain on yaw (tail) axis ||N/A  ||45  ||17  ||
-||Yaw Angular Gain ||Angular gain on yaw axis ||N/A  ||45  ||17  ||
-|| || ||  ||  ||  ||
+|| *Parameter* || *Description* || *HBFP* || *FireFox Ep200* || *CopterX 250SE* || *Blade CP* ||
+||Servo 1 Theta Angle ||Location of servo1 on swashplate||0  ||-60  ||-60  ||-60  ||
+||Servo 2 Theta Angle ||Location of servo2 on swashplate||-270  ||-180  ||-180  ||-180 ||
+||Servo 3 Theta Angle ||Location of servo3 on swashplate||0  ||-300  ||-300  ||-300 ||
+||Pitch Rate Gain || Rate gain on pitch axis ||14  ||21  ||17  ||20 ||
+||Pitch Angular Gain || Angular Gain on Pitch axis ||60  ||63  ||85  ||65 ||
+||Roll Rate Gain ||Rate Gain on Roll axis ||14  ||21  ||17  ||17 ||
+||Roll Angular Gain ||Angular Gain on Roll axis ||60  ||63  ||85  ||65 ||
+||Angular Decay ||Decay rate of angular compensation ||95  ||100  ||100  ||100 ||
+||Phase Angle ||Phase offset of swash inputs from forward=0 ||-45  ||-45  ||-45  ||0 ||
+||Yaw Rate Gain ||Rate gain on yaw (tail) axis ||N/A  ||45  ||17  || N/A ||
+||Yaw Angular Gain ||Angular gain on yaw axis ||N/A  ||45  ||17  || N/A ||
+|| || ||  ||  ||  ||  ||
 || || *Physical specs that affect mechanical gain* ||
-|| Head Setup || Flybarred (FB) or Flybarless (FBL) || FBL || FBL || FBL ||
+|| Head Setup || Flybarred (FB) or Flybarless (FBL) || FBL || FBL || FBL || FB ||
 ||Tail Rotor Control Arm Ratio ||Leverage ratio of tail bellcrank||N/A  ||2.6  ||1.25  ||
 ||Tail Servo Horn Length ||Distance from horn screw to link ball screw||N/A  ||11mm  ||7mm  ||
 ||Main Rotor Pitch Arm Length ||Distance, link ball to main shaft centerline||17mm  ||12mm  ||14mm  ||
