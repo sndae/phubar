@@ -37,3 +37,4 @@ http://www.rcgroups.com/forums/member.php?u=187518    (Scroll to the very bottom
  * Improve tail servo handling with features found in high-end tail gyros
  * Expand capabilities of the Spin code that drives the TextStar to include setup functions in addition to the tuning functions it handles now
  * Wireless tuning with BlueTooth-enabled touchscreen (iPad, etc)
+ * Optionally accept serial data from Spektrum satellite receivers
