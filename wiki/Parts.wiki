@@ -18,6 +18,11 @@
 || 10 ||490-1664-1-ND CAP CER 10000PF 50V 10% X7R 0805||$0.28||
 ||  1  ||160-1782-ND  3mm White LED||			$0.39||
 
+
+I recommend using a no-clean flux for soldering, to prevent corrosion.
+  Example: SMD291NL-ND from DigiKey works well
+
+
 ===Components from SparkFun===
 ||*Quantity*||*Part Number*||*Cost*||
 ||1|| Sparkfun male right-angle header PRT-00553|| 	$ 1.95||
