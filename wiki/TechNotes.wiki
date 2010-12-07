@@ -1,4 +1,5 @@
-#summary General design notes and opportunities for others to contribute
+#summary General design notes
+
 ===Design===
 The example code uses five of the eight available cogs of the Propeller chip. A sixth is used only in setup mode when a PropPlug is connected, or when running ViewPort for debugging.
 
@@ -32,9 +33,3 @@ More detail about PhuBar2 (2-axis) can be found here:
 
 http://www.rcgroups.com/forums/member.php?u=187518    (Scroll to the very bottom to see the earliest blog entries)
 <br><br>
-
-===Opportunities for others to contribute:===
- * Improve tail servo handling with features found in high-end tail gyros
- * Expand capabilities of the Spin code that drives the TextStar to include setup functions in addition to the tuning functions it handles now
- * Wireless tuning with BlueTooth-enabled touchscreen (iPad, etc)
- * Add compatibility with Spektrum satellite receivers
