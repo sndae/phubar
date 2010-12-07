@@ -1,5 +1,6 @@
+#summary Opportunities for others to contribute to the project
 
-===Opportunities for others to contribute:===
+===Possible Enhancements:===
 
  * Make compatible with Spektrum satellite receivers
  * Improve tail servo handling with features found in high-end tail gyros
