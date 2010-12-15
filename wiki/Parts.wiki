@@ -10,7 +10,7 @@
 ||1  ||P8X32A-Q44-ND IC PROPELLER 8 32BIT COGS 44LQFP ||$7.99||
 ||1  ||TC1262-3.3VDB-ND  IC REG 500MA SOT223-3||$0.56||   
 ||  ||(or substitute LT1521CST-3.3#PBF-ND  IC REG 300MA SOT223-3) || $4.13||         
-|| 1  ||24FC512-I/SN-ND IC EEPROM 512KBIT 400KHZ 8SOIC|| $1.94||
+|| 1  ||24FC512-I/SN-ND IC EEPROM 512KBIT 1MHz 8SOIC|| $1.94||
 || 1  ||X410-ND CRYSTAL 5.000 MHZ 20PF 49US||   	$0.58||
 || 10 ||399-3138-1-ND CAP CERAMIC 10UF 6.3V X5R 0805|| 	$2.42||
 || || *Note: Voltage ratings on the next 3 items are important* || ||
