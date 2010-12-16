@@ -2,20 +2,25 @@
 
 Following are tips on building a board using the printed circuit board referenced on the parts page:
 
+====Soldering====
+Use a temperature-controlled soldering iron,  or at least use a small 12-watt iron with fine point tip.
+
+Use no-clean flux,  and clean the finished board with alcohol and a small brush.
+
 ====Assembly Order====
 
 Start with the gyro chip since it requires the soldering iron to have free access from many angles, and your 10x magnifier loupe needs to see the chip from many angles without other parts being in the way.
 
-Solder the other IC chips next
+Solder the Propeller, regulator, and eeprom chips next.
 
 Solder the LED, resistors and caps next.
 
-Solder the connector headers last, because they restrict access to other components the most.  You will want to minimize the amount that the header pins protrude through the board, so that the board will lay as flat as possible when you put foam tape on it and attach it to your helicopter.
+Solder the connector headers last, because they restrict access to other components the most.  You will want to minimize the amount that the header pins protrude through the board, so that the board will lay as flat as possible when you put foam tape on it and attach it to your helicopter.   
 
 ====Rework;  Protecting the Crystal====
-If you use hot air to heat part of the board near the crystal more than a couple of times,  you run the risk of killing the crystal, since it is a big metal can and it soaks up the heat.  This happened to me when I reworked the gyro chip several times. 
+If you use hot air to rework any part of the board near the crystal more than a couple of times,  you run the risk of killing the crystal, since it is a big metal can and it soaks up the heat.  This happened to me when I reworked the gyro chip several times. 
 
-I decided that anytime I need to rework the gyro or eeprom that I will remove the crystal first.  I just use my iron on one lead at a time on the back of the board, prying the crystal up slightly each time and going back and forth on each lead until they are free.
+I decided that anytime I need to rework the gyro or eeprom, I will remove the crystal first.  I just use my iron on one lead at a time on the back of the board, prying the crystal up slightly each time and going back and forth on each lead until they are free.
 
 You know the crystal is dead when programs that specify _xinfreq and _clkmode will not run, but programs that run on the internal clock WILL run.   The simple LED test program can be run both ways to check this.
 
