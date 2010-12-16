@@ -51,4 +51,6 @@ PUB start
 
 If you cannot get the LED to blink at all, check to make sure the flat side of the LED (anode) is toward the 5-pin header.  Also, check that all pins of the Propeller are soldered well. If even one of the 4 ground pins is not soldered, code will load and run, but the I/O pins may not function, including the pin driving the LED.
 
+Since the whole board draws less than 35mA, the regulator should not get warm if everything is assembled correctly and there are no shorts. 
+
  
