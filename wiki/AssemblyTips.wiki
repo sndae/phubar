@@ -27,17 +27,18 @@ You can check to see if the Propeller is functioning by loading this program int
 {{{
 CON
   _xinfreq=5_000_000            
-  _clkmode=xtal1+pll16x    'The system clock is set at 80MHz
-  statusLEDpin       = 3   'Phubar is normally pin 3 
-
+  _clkmode=xtal1+pll16x      
+  statusLEDpin       = 3
+  
 PUB start
 
-  dira[statusLEDpin]~~  'Status LED set pin set for output 
-  
+  dira[statusLEDpin]~~    
   repeat
-        outa[statusLEDpin]~~    'on                       
+        outa[statusLEDpin]~~                           
         waitcnt(clkfreq/100+cnt)
-        outa[statusLEDpin]~    'off
+        outa[statusLEDpin]~    
         waitcnt(clkfreq/2+cnt)
 
 }}}
+
+If you cannot get the LED to blink at all, check the make sure the flat side of the LED is toward the 5-pin header.  Also, check that all 4 ground pins of the Propeller are soldered well.  
