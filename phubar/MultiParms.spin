@@ -236,20 +236,7 @@ PUB getGyroZAxisAddress
 PUB Initialize
 
   UpdateParmsFromEeprom
-  
-  IF((pulseInterval[activeModelIndex] < 1) or (pulseInterval[activeModelIndex] > 30)) 'If nothing saved yet, use defaults
 
-      SetDefaults
-      SaveParmsToEeprom
-  else
-      InitNewParms
-
-PUB InitNewParms | index
- ' Initialize any new parms that may have been added since last release
- '  only if they are outside acceptable range
-  repeat index from 0 to MAX_MODELS-1
-     if((swashRing[index] < MIN_SWASH_RING) or (swashRing[index] > MAX_SWASH_RING))
-         swashRing[index] := 50 
       
 PUB StoreModelName(name, model) | index
  index := 0
@@ -272,7 +259,9 @@ PUB SetDefaults   | index
   'Set parameters to defaults
   '----------------------------------------------------
   '  Settings for various helis, assumes PhuBar2 is mounted
-  '  top-up and 4-pin connector facing to the right.
+  '  top-up and 4-pin connector facing to the right.  Otherwise,
+  '  the auto-setup features can be used to set servo and gyro
+  '  directions for Phubar2 or PhuBar3
   '
   '                 Honeybee    FireFox  FireFox
   '                --------------------------------------
@@ -498,7 +487,8 @@ PRI EditParameters | response
     serio.tx($D)
     response := RXorDisconnect
 
-    if(response == -1) 
+    if(response == -1)        ' Considered the same as a quit
+       UpdateParmsFromEeprom  ' Needed to prevent lockup ???
        QUIT
     
     if((response) == "q")
@@ -1185,7 +1175,8 @@ PRI TextStarMenu | response
     serio.str(string("<Cancel    Tune>"))
     response := TextStarCommandOrDisconnect
 
-    if(response == -1) 
+    if(response == -1)
+       UpdateParmsFromEeprom 'Treat disconnect like a Cancel
        QUIT
                
     if(response == "A") ' Save 
@@ -1204,7 +1195,8 @@ PRI TextStarMenu | response
        TextStarSelectModel
        
     if(response == "D")
-       TextStarTune
+       TextStarTune 
+        
 
        
 PRI TextStarSelectModel | response, index, tempstr[MODEL_NAME_LENGTH] 
@@ -1276,25 +1268,25 @@ PRI TextStarTune | response
 
     repeat
       response := TextStarEditInteger(string("Pitch Rate Gain"),   @pitchRateGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Pitch Angle Gain"),  @pitchAngularGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Roll Rate Gain"),    @rollRateGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Roll Angle Gain"),   @rollAngularGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Angular Decay"),     @angularDecay[activeModelIndex],0,300,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Phase Angle"),       @phaseAngle[activeModelIndex],-90,90,1)         
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Swash Ring"),        @swashRing[activeModelIndex],25,100,1)         
-      if(response == "B")
+      if((response == "B") or (response == -1))
          QUIT
 
      '----------------------------------    
@@ -1304,20 +1296,21 @@ PRI TextStarTune | response
         NEXT
         
       response := TextStarEditInteger(string("Yaw Rate Gain"),   @yawRateGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
         QUIT
       response := TextStarEditInteger(string("Yaw HH Gain"),     @yawAngularGain[activeModelIndex],0,100,1)
-      if(response == "B")
+      if((response == "B") or (response == -1))
         QUIT
       response := TextStarEditInteger(string("Yaw HH Deadband"), @headingHoldDeadband[activeModelIndex],0,2000,100)
-      if(response == "B")
+      if((response == "B") or (response == -1))
         QUIT
       response := TextStarEditSwitch (string("HH Mode On"),      %10000000, %01111111)   'Masks for heading hold flag
-      if(response == "B")
+      if((response == "B") or (response == -1))
         QUIT
-      if(response == -1)        ' User disconnected, return to menu 
-        return
-     '----------------------------------    
+
+             
+    'return response
+        
 
  
 PRI TextStarEditSwitch(label, mask1, mask2) | response
@@ -1379,10 +1372,7 @@ PRI TextStarCommandOrDisconnect : rxbyte
   
   repeat until (ina[constants#SERIAL_RX_PIN] == 0)
   utilities.pause(20)       ' Give time for both characters to come in from button press/release
-  rxbyte := serio.rxcheck   ' get the first char from button press
+  rxbyte := serio.rxcheck   ' get the first char from button pres
   serio.rx                  ' eat the second char from button release, we don't need it
-           
-'DAT
-'        ModelName byte "Default        ",0
 
                     

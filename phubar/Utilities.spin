@@ -43,5 +43,15 @@ PUB SignalErrorRapid  'Rapid blink of LED signals error
 PUB pause(ms) | t    'Pause for ms milliseconds
   t := cnt - 1088    'Compensate for latency of the call at 80mHz
   repeat ms
-    waitcnt(t += MS_001)       
+    waitcnt(t += MS_001)
+
+
+PUB BadError  'Rapid blink of LED signals error
+
+      dira[constants#SERIAL_TX_PIN]~  'Set for input
+      dira[constants#STATUS_LED_PIN]~~  'Status LED set pin set for output
+       
+      repeat     
+        ! outa[constants#STATUS_LED_PIN]
+        pause(125)       
         
