@@ -8,9 +8,17 @@
 
 
 PUB SoftwareVersion
-   return string("3.3.2")   'Current version 
+   return string("3.3.3 alpha")   'Current version 
 
 {    Versions
+        3.3.3  In progress
+               Removed redundant StopIO in InitializeParameters
+               Multiparms.Initialize - removed check for pulseInterval[0] to see if parms have been stored
+                   - fixed bug where parms were being erased sometimes upon software update
+                   Now it is necessary to do (r)estore defaults on first load of a new PhuBar unit.
+               Added call to UpdateParmsFromEeprom whenever user disconnects PropPlug, same as Quitting
+                   - fixed bug where disconnecting PropPlug 3 times in a row would cause lock-up
+                     on both PropPlug and TextStar               
          3.3.2 RC_Receiver.spin now replaces MonitorRCReceiver.spin.
                Expected to cover a wider range of receivers.  Handles overlapping pulses
                across channels with 1us resolution
