@@ -8,10 +8,11 @@
 
 
 PUB SoftwareVersion
-   return string("3.3.3 alpha")   'Current version 
+   return string("3.3.3a")   'Current version 
 
 {    Versions
         3.3.3  In progress
+               Added all setup parms to TextStar code, except model name (need keyboard to enter)
                Removed redundant StopIO in InitializeParameters
                Multiparms.Initialize - removed check for pulseInterval[0] to see if parms have been stored
                    - fixed bug where parms were being erased sometimes upon software update
