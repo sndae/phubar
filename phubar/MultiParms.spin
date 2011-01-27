@@ -474,8 +474,7 @@ PRI EditParameters | response
   if(response == -1) 'No char came in, user must have disconnected, so we are done
        return
        
-  if(((response) == "A") or ((response) == "B") or ((response) == "C") or ((response) == "D")) 
-       'TextStarEdit         
+  if(((response) == "A") or ((response) == "B") or ((response) == "C") or ((response) == "D"))          
        TextStarMenu          'User hits a button on TextStar go into TextStar edit mode 
        return      
 
@@ -1172,7 +1171,7 @@ PRI TextStarMenu | response
     serio.tx($D)    
     serio.str(string("<Save     Model>"))   
     serio.tx($D)       
-    serio.str(string("<Cancel    Tune>"))
+    serio.str(string("<Cancel  Adjust>"))
     response := TextStarCommandOrDisconnect
 
     if(response == -1)
@@ -1184,20 +1183,44 @@ PRI TextStarMenu | response
         serio.str(string("Saving...     "))
         serio.tx(13)   
         SaveParmsToEeprom
+        NEXT
         
     if(response == "B")  ' Cancel
         serio.tx(12)
         serio.str(string("Reverting..."))
         activeModelIndex := lastModelIndex 
         UpdateParmsFromEeprom                'Revert parms from eeprom
-      
+        NEXT
+        
     if(response == "C")  'Select Model
        TextStarSelectModel
+       NEXT
+       
+    if(response == "D")
+       TextStarAdjust 
+       NEXT
+        
+PRI TextStarAdjust | response
+
+  repeat             
+    serio.tx($D)    
+    serio.str(string("          Setup>"))   
+    serio.tx($D)       
+    serio.str(string("<Exit      Tune>"))
+    response := TextStarCommandOrDisconnect
+
+    if(response == -1)
+       UpdateParmsFromEeprom 'Treat disconnect like a Cancel
+       QUIT
+     
+    if(response == "B")  ' Done
+        QUIT
+      
+    if(response == "C")  'Setup
+       TextStarSetup
        
     if(response == "D")
        TextStarTune 
-        
-
        
 PRI TextStarSelectModel | response, index, tempstr[MODEL_NAME_LENGTH] 
 
@@ -1258,7 +1281,7 @@ PRI TextStarSelectModel | response, index, tempstr[MODEL_NAME_LENGTH]
       serio.str(string("<next      quit>"))           
 
 
-PRI TextStarTune | response
+PRI TextStarTune | response, tempbit
 
 
     'response := RXOrDisconnect   'Eat second char from TextStar command
@@ -1304,39 +1327,128 @@ PRI TextStarTune | response
       response := TextStarEditInteger(string("Yaw HH Deadband"), @headingHoldDeadband[activeModelIndex],0,2000,100)
       if((response == "B") or (response == -1))
         QUIT
-      response := TextStarEditSwitch (string("HH Mode On"),      %10000000, %01111111)   'Masks for heading hold flag
+      response := TextStarEditSwitch (string("HH Mode On"),      getHeadingHoldActive, @tempbit) '%10000000, %01111111)   'Masks for heading hold flag
+      setHeadingHoldActive(tempbit)
       if((response == "B") or (response == -1))
         QUIT
+      
 
              
     'return response
-        
 
- 
-PRI TextStarEditSwitch(label, mask1, mask2) | response
+PRI TextStarSetup | response, tempbit
+
+      
+    repeat
+      response := TextStarEditInteger(string("Srvo Pulse Int"),   @pulseInterval[activeModelIndex],5,20,1)
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditAxis(string("Gyro X Axis"),         @gyroXAxisAssignment[activeModelIndex] )
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditAxis(string("Gyro Y Axis"),         @gyroYAxisAssignment[activeModelIndex] )
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditSwitch(string("Rvrse Ptch Gyro"),  getreversePitchGyro, @tempbit   )
+      setReversePitchGyro(tempbit)
+      if((response == "B") or (response == -1))
+         QUIT      
+      response := TextStarEditSwitch(string("Revrse Rol Gyro"),   getreverseRollGyro, @tempbit    )
+      setReverseRollGyro(tempbit)
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditInteger(string("Servo 1 Theta"),    @servo1theta[activeModelIndex],-360,360,1  )
+      if((response == "B") or (response == -1))
+         QUIT      
+      response := TextStarEditInteger(string("Servo 2 Theta"),    @servo2theta[activeModelIndex],-360,360,1  )
+      if((response == "B") or (response == -1))
+         QUIT      
+      response := TextStarEditInteger(string("Servo 3 Theta"),    @servo3theta[activeModelIndex],-360,360,1  )
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditSwitch(string("Revrse Servo 1"),    getServo1Reverse, @tempbit   )
+      setServo1Reverse(tempbit)
+      if((response == "B") or (response == -1))
+         QUIT      
+      response := TextStarEditSwitch(string("Revrse Servo 2"),    getServo2Reverse, @tempbit   )
+      setServo2Reverse(tempbit)
+      if((response == "B") or (response == -1))
+         QUIT      
+      response := TextStarEditSwitch(string("Revrse Servo 3"),    getServo3Reverse, @tempbit   )
+      setServo3Reverse(tempbit)
+      if((response == "B") or (response == -1))
+         QUIT      
+    
+         
+           
+      if(constants#HARDWARE_VERSION == 2)
+        NEXT
+        
+      response := TextStarEditAxis(string("Gyro Z Axis"), @gyroZAxisAssignment[activeModelIndex] )
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditSwitch(string("Revrse Yaw Gyro"),   getreverseYawGyro, @tempbit    )
+      setReverseYawGyro(response)
+      if((response == "B") or (response == -1))
+         QUIT
+      
+      response := TextStarEditSwitch(string("Revrse Tail Svo"),   getTailServoReverse, @tempbit    )
+      setTailServoReverse(response)
+      if((response == "B") or (response == -1))
+         QUIT
+      
+       
+
+                       
+PRI TextStarEditAxis(label, parmaddr) | response
 
   repeat
      serio.tx(12)
      serio.str(label)
      serio.tx(13)
      serio.str(string("<exit     "))
-     if((flags[activeModelIndex] & mask1) <> 0)
+     serio.str(parmAddr)
+     response := TextStarCommandOrDisconnect
+     
+     if(response == -1) 'No char came in, user must have disconnected, so we are done
+        QUIT     
+     if((response == "C") or (response == "D")) ' Increment value 
+         if(long[parmAddr] == "R")  
+            long[parmAddr] := "P"     
+         elseif(long[parmAddr] == "P")
+                long[parmAddr] := "Y"                   
+         elseif(long[parmAddr] == "Y")
+                long[parmAddr] := "R"   
+     if((response == "A") or (response == "B")) ' Done with this parameter
+        QUIT
+
+  return response
+ 
+PRI TextStarEditSwitch(label, value, parmAddr) | response
+
+  long[parmAddr] := value  
+  repeat
+     serio.tx(12)
+     serio.str(label)
+     serio.tx(13)
+     serio.str(string("<exit     "))
+     if(long[parmAddr] <> 0)
         serio.str(string("Y"))
      else
         serio.str(string("N"))
      serio.tx(13)
      response := TextStarCommandOrDisconnect
      
-     if(response == -1) 'No char came in, user must have disconnected, so we are done
-        QUIT     
-     if((response == "C") or (response == "D")) ' Change Value to opposite
-         if((flags[activeModelIndex] & mask1) <> 0)   'If flag set
-            flags[activeModelIndex] &= mask2     'Then unset it
-         else
-            flags[activeModelIndex] |= mask1     'Otherwise, set it              
-         
      if((response == "A") or (response == "B")) ' Done with this parameter
         QUIT
+     if(response == -1) 'No char came in, user must have disconnected, so we are done
+        QUIT
+             
+     if((response == "C") or (response == "D")) ' Change Value to opposite
+         if(long[parmAddr] == 1)   'If flag set
+            long[parmAddr] := 0     'Then unset it
+         else
+            long[parmAddr] := 1     'Otherwise, set it              
 
   return response
       
