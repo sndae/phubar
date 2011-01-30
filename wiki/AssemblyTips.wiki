@@ -7,7 +7,7 @@ Use a temperature-controlled soldering iron,  or at least use a small 12-watt ir
 
 A 10x magnifier, held with a third-hand device, is a must when soldering the gyro chip.  Keeping the chip aligned with the pads is important, so the gyro axes will be aligned with the board.  I put a very tiny drop of epoxy on the bottom of the chip and set it in place, and use the magnifier and a toothpick to nudge the chip into alignment with the pads.   After an hour or so has passed to allow the glue to set, the chip can be fluxed and soldered.
 
-Use no-clean flux, and clean the finished board with alcohol and a small brush.
+Use no-clean flux, and clean the finished board with alcohol and a small brush.  When clean, use a heat gun, hair dryer, or space heater to gently heat the board for about 10 minutes to drive out any moisture trapped under the components.
 
 There are lots of guides and videos available online for soldering SMD components, such as those at curiousinventor.com.
 
