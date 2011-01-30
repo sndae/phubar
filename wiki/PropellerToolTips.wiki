@@ -1,0 +1,9 @@
+#summary Tips for Using the Propeller Tools
+
+While the Propeller Serial Terminal is adequate, it has its shortcomings.  One is that you cannot do a copy/paste from it to save your PhuBar parameter settings into a file.
+
+An alternative terminal program that will allow copy/paste is "Terminal" by Bray++.  It is available here:
+
+    https://sites.google.com/site/terminalbpp/
+
+Just select the appropriate COM port, and then type into the transmit pane.  You can do a right-mouse->copy from the receive pane and paste into NotePad.
