@@ -5,9 +5,11 @@ Following are tips on building a board using the printed circuit board reference
 ===Soldering===
 Use a temperature-controlled soldering iron,  or at least use a small 12-watt iron with fine point tip.
 
-Use no-clean flux,  and clean the finished board with alcohol and a small brush.
+A 10x magnifier, held with a third-hand device, is a must when soldering the gyro chip.  Keeping the chip aligned with the pads is important.  I put a very tiny drop of epoxy on the bottom of the chip and set it in place, and use the magnifier and a toothpick to nudge the chip into alignment with the pads.   After an hour or so has passed to allow the glue to set, the chip can be fluxed and soldered.
 
-A 10x magnifier, held with a third-hand device, is a must when soldering the gyro chip.
+Use no-clean flux, and clean the finished board with alcohol and a small brush.
+
+There are lots of guides and videos available online for soldering SMD components, such as those at curiousinventor.com.
 
 ===Assembly Order===
 
