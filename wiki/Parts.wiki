@@ -31,7 +31,7 @@ I recommend using a no-clean flux for soldering, to prevent corrosion.
 ||1|| Sparkfun male right-angle header PRT-00553|| 	$ 1.95||
 
 ===Printed Circuit Board from BatchPCB===
-  http://batchpcb.com/index.php/Products/41628    $22.00
+  http://batchpcb.com/index.php/Products/41628    $16.00
 
 ===Components from CDI===
 ||*Quantity*||*Part Number*||*Cost*||
