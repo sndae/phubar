@@ -8,7 +8,7 @@
 
 
 PUB SoftwareVersion
-   return string("3.3.3a")   'Current version 
+   return string("3.3.3")   'Current version 
 
 {    Versions
         3.3.3  In progress
