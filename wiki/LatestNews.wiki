@@ -1,0 +1,10 @@
+
+As of Feb 1, 2011
+
+Changes to code on the main SVN trunk, version 3.3.3 (in progress):
+  Added code that allows you to change Setup parameters using the TextStar terminal.  Previously only tuning parameters (gains, phase) could be changed with the TextStar, while setup (servo reversals, gyro axes, etc) had to be done with the PropPlug connected to a PC.  Now, the model name is the only thing that cannot be changed with the TextStar, since it requires a keyboard to enter the name.
+
+  Also, fixed the bug that caused parameters to be lost when loading an updated version of software into eeprom. 
+
+
+
