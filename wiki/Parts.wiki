@@ -43,8 +43,7 @@ I recommend using a no-clean flux for soldering, to prevent corrosion.
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||  Parallax PropPlug + usb cable + shipping||	$ 16.56||
 
-	
-Optional right-angle header from AeroQuad
+===Optional right-angle header from AeroQuad===
 ||*Quantity*||*Part Number*||*Cost*||
 ||1||8-pos 3-row header at AeroQuad+shipping||		$ 4.20|| 
 
