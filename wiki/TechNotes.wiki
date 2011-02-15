@@ -1,7 +1,7 @@
 #summary General design notes
 
 ===Safety Warning===
-Because this device intercepts and modifies the receiver signals, there is always the possibility that a hardware or software failure could cause loss of control of an aircraft.  Always be aware of this and exercise appropriate safety precautions, including keeping the aircraft a safe distance from yourself and any spectators.
+Because this device intercepts and modifies the receiver signals, there is always the possibility that a hardware or software failure could cause loss of control of the model, similar to loss of radio signal or receiver failure.  Always be aware of this and exercise appropriate safety precautions, including keeping the aircraft a safe distance from yourself and any spectators.
 
 ===Design===
 The example code uses five of the eight available cogs of the Propeller chip. A sixth is used only in setup mode when a PropPlug is connected, or when running ViewPort for debugging.
