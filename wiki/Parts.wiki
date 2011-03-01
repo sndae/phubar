@@ -19,7 +19,7 @@
 || 10 ||478-3755-1-ND CAP CERM .10UF 10% 25V X7R 0805||	$0.61||
 || 10 ||445-1332-1-ND CAP CER 2200PF 50V C0G 5% 0805||	$1.21||
 || 10 ||490-1664-1-ND CAP CER 10000PF 50V 10% X7R 0805||$0.28||
-||  1  ||160-1782-ND  3mm White LED||			$0.39||
+||  1  ||160-1782-ND  3mm White LED||			$0.54||
 
 
 I recommend using a no-clean flux for soldering, to prevent corrosion.
