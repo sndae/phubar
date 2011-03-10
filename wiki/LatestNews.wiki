@@ -1,11 +1,11 @@
 March 9, 2011
 
-Added version 3.4 tag.  This release contains the 3.3.3 changes described below, plus a fix to a bug that was causing swash angles to be severly limited at upper and lower ends of collective range. Version 3.3.3 was skipped. 
+Added version 3.4 tag.  This release contains the 3.3.3 changes described below, plus a fix to a bug that was causing cyclic to be severly limited at upper and lower ends of collective range due to some hard stops on servo throw. Version 3.3.3 was skipped. 
 
 Feb 1, 2011
 
 Changes to code on the main SVN trunk, version 3.3.3 (in progress):
-  Added code that allows you to change Setup parameters using the TextStar terminal.  Previously only tuning parameters (gains, phase) could be changed with the TextStar, while setup (servo reversals, gyro axes, etc) had to be done with the PropPlug connected to a PC.  Now, the model name is the only thing that cannot be changed with the TextStar, since it requires a keyboard to enter the name.
 
-  Also, fixed the bug that caused parameters to be lost when loading an updated version of software into eeprom. 
+Added code that allows you to change Setup parameters using the TextStar terminal.  Previously only tuning parameters (gains, phase) could be changed with the TextStar, while setup (servo reversals, gyro axes, etc) had to be done with the PropPlug connected to a PC.  Now, the model name is the only thing that cannot be changed with the TextStar, since it requires a keyboard to enter the name.
 
+Also, fixed the bug that caused parameters to be lost when loading an updated version of software into eeprom. 
