@@ -31,11 +31,11 @@ PUB Start(pos1address, pos2address, pos3address, pos4address, pulseInterval)  :o
   p4:=pos4address     'Stores the address of the "position4" variable in the main Hub RAM as "p4" 
   
   ServoPin1 := |< constants.GetSERVO_1_PIN     ' Set pins based on common constants file
-  ServoPin2 := |< constants.GetSERVO_2_PIN
+  ServoPin2 := |< constants.GetSERVO_2_PIN     ' Overrides defaults in DAT section
   ServoPin3 := |< constants.GetSERVO_3_PIN
   ServoPin4 := |< constants.GetSERVO_4_PIN
     
-  LowTime := pulseInterval * 80_000            
+  LowTime := pulseInterval * 80_000            ' Overrides defaults in DAT section  
   Stop
   CenterServos                             'Servos need to start at center to begin working right
   okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "ThreeServos" cell
