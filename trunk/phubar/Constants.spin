@@ -8,18 +8,19 @@
 
 
 PUB SoftwareVersion
-   return string("3.3.3")   'Current version 
+   return string("3.4")   'Current version 
 
 {    Versions
-        3.3.3  In progress
-               Added all setup parms to TextStar code, except model name (need keyboard to enter)
+         3.4   Added all setup parms to TextStar code, except model name (need keyboard to enter)
                Removed redundant StopIO in InitializeParameters
                Multiparms.Initialize - removed check for pulseInterval[0] to see if parms have been stored
-                   - fixed bug where parms were being erased sometimes upon software update
+                   - this fixed bug where parms were being erased sometimes upon software update
                    Now it is necessary to do (r)estore defaults on first load of a new PhuBar unit.
                Added call to UpdateParmsFromEeprom whenever user disconnects PropPlug, same as Quitting
-                   - fixed bug where disconnecting PropPlug 3 times in a row would cause lock-up
-                     on both PropPlug and TextStar               
+                   - this fixed bug where disconnecting PropPlug 3 times in a row would cause lock-up
+                     on both PropPlug and TextStar
+               Changed limits on minServoPos and maxServoPos to allow full servo range - this fixed
+                  bug where swash could not tilt full range when collective was full up or full down               
          3.3.2 RC_Receiver.spin now replaces MonitorRCReceiver.spin.
                Expected to cover a wider range of receivers.  Handles overlapping pulses
                across channels with 1us resolution
