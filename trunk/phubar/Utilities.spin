@@ -20,6 +20,19 @@ PUB FlashLED
       outa[constants#STATUS_LED_PIN]~~
       pause(5)
       outa[constants#STATUS_LED_PIN]~
+
+PUB SignalNFlashes(flashes)
+
+   dira[constants#SERIAL_TX_PIN]~  'Set for input
+   dira[constants#STATUS_LED_PIN]~~  'Status LED set pin set for output
+
+    repeat until(ina[constants#SERIAL_RX_PIN] == 1)
+     repeat flashes
+       outa[constants#STATUS_LED_PIN]~~
+       pause(100)
+       outa[constants#STATUS_LED_PIN]~
+       pause(200)
+     pause(700)
              
 PUB SignalError  'Rapid blink of LED signals error
 
