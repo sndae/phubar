@@ -455,7 +455,7 @@ PRI DumpSetupParameters
     
 
                
-PRI EditParameters | response
+PRI EditParameters | response, now
   '---------------------------------------------------------------------------------
   ' Use Robert Quattlebaum's Settings object to store/retrieve parameters in eeprom
   '  allowing user to edit them via serial/USB to serial terminal tool
