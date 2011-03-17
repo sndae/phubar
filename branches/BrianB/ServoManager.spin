@@ -38,7 +38,7 @@ PUB Start(pos1address, pos2address, pos3address, pos4address, pulseInterval)  :o
   LowTime := pulseInterval * 80_000            ' Overrides defaults in DAT section  
   Stop
   CenterServos                             'Servos need to start at center to begin working right
-  okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "ThreeServos" cell
+  okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "FourServos" cell
       
 PUB Stop
   if servocog
@@ -106,13 +106,13 @@ Loop          mov       dira,ServoPin1    'Set the direction of the "ServoPin1" 
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
               
-              mov       dira,ServoPin3    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
-              rdlong    HighTime,p3       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       dira,ServoPin3    'Set the direction of the "ServoPin3" to be an output (and all others to be inputs)  
+              rdlong    HighTime,p3       'Read the "position3" variable from Main RAM and store it as "HighTime"
               mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
-              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
+              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin3 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
-              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin3 low b/c rest are inputs)
 
               mov       dira,ServoPin4    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
               rdlong    HighTime,p4       'Read the "position4" variable from Main RAM and store it as "HighTime"
