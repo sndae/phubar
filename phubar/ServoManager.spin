@@ -19,7 +19,8 @@ CON
   SERVO_MAX    = 160_000
   SERVO_CENTER = 120_000 
   SERVO_MIN    =  80_000
-                                          
+  ONE_PERCENT_SERVO_THROW = (SERVO_MAX - SERVO_MIN)/100
+                                         
 VAR
   long servocog
                                                                                                                               
