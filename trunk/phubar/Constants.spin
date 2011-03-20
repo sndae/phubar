@@ -11,6 +11,8 @@ PUB SoftwareVersion
    return string("3.4")   'Current version 
 
 {    Versions
+         3.5   in progress - adding servo trim parms.
+               added SignalNFlashes to distinguish different error conditions
          3.4   Added all setup parms to TextStar code, except model name (need keyboard to enter)
                Removed redundant StopIO in InitializeParameters
                Multiparms.Initialize - removed check for pulseInterval[0] to see if parms have been stored
