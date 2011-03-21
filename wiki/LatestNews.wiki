@@ -1,6 +1,6 @@
 March 21, 2011
 
-Added a servo trim feature, accessed from the setup menu.  This allows a +/- 10% adjustment of the center of each servo.  Positive trim moves a swash servo horn in the down direction, negative is up.
+Added a servo trim feature, accessed from the setup menu.  This allows a +/- 10% adjustment of the center of any servo.  Positive trim moves a swash servo horn in the down direction, negative is up.
 
 March 9, 2011
 
