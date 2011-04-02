@@ -894,10 +894,10 @@ PRI SelectModel  | response, index, tempstr[3]
     lastModelIndex := activeModelIndex
     activeModelIndex := response -1  'Convert ascii char to equiv numeral 0 thru 9
 
-PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4
+PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4 ,s5
 
   sm.Stop
-  sm_cog := sm.Start(@s1, @s2, @s3, @s4, GetPulseInterval)  
+  sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval)  
   if(not sm_cog)
     utilities.SignalError
     
