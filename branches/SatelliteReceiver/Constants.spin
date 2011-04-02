@@ -44,6 +44,7 @@ CON
   STATUS_LED_PIN       = 3        ' LED to signal status of PhuBar
   SERIAL_TX_PIN        = 30
   SERIAL_RX_PIN        = 31
+  DEBUGWITHSERIAL      = FALSE        'FALSE to keep program running for serial debugging                                                                       
 
   YAW_LIMIT            = 244_000  ' Equates to about 180 degrees of yaw travel
                                   ' that we track before we stop integrating it
