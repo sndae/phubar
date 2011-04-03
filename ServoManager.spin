@@ -19,7 +19,8 @@ CON
   SERVO_MAX    = 160_000
   SERVO_CENTER = 120_000 
   SERVO_MIN    =  80_000
-                                          
+  ONE_PERCENT_SERVO_THROW = (SERVO_MAX - SERVO_MIN)/100
+                                         
 VAR
   long servocog
                                                                                                                               
@@ -130,7 +131,7 @@ ServoPin1     long      |<     14 '<------- This sets the pin that outputs the f
                                           ' to another number to specify another pin (0-31).
 ServoPin2     long      |<     13 '<------- This sets the pin that outputs the second servo signal (could be 0-31). 
 ServoPin3     long      |<     12 '<------- This sets the pin that outputs the third servo signal (could be 0-31).
-ServoPin4     long      |<     11 '<------- This sets the pin that outputs the third servo signal (could be 0-31).
+ServoPin4     long      |<     11 '<------- This sets the pin that outputs the fourth servo signal (could be 0-31).
 p1            long      0                 'Used to store the address of the "position1" variable in the main RAM
 p2            long      0                 'Used to store the address of the "position2" variable in the main RAM  
 p3            long      0                 'Used to store the address of the "position3" variable in the main RAM
