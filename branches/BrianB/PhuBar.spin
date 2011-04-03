@@ -85,7 +85,8 @@ VAR
   long tailServoPos, swashRotSineTerm, swashRotCosTerm  
 
   long filteredYawRate, yawIncrement
-  long yawCorrection, cyclecount 
+  long yawCorrection, cyclecount
+  long servo1Center, servo2Center, servo3Center, tailServoCenter
 
   
 PUB PhUBar | i      ' This is the main entry point
@@ -188,9 +189,9 @@ PUB PhUBar | i      ' This is the main entry point
     phasedS3Correction := ((((pitchCorrection ~> 1) * cosTerm3A) +  ((rollCorrection ~> 1) * cosTerm3B)) ~> 15) + collectiveCorrection
 
 
-    servo1Command := servoman#SERVO_CENTER + (phasedS1Correction * servo1sign)
-    servo2Command := servoman#SERVO_CENTER + (phasedS2Correction * servo2sign)
-    servo3Command := servoman#SERVO_CENTER + (phasedS3Correction * servo3sign)
+    servo1Command := servo1Center + (phasedS1Correction * servo1sign)
+    servo2Command := servo2Center + (phasedS2Correction * servo2sign)
+    servo3Command := servo3Center + (phasedS3Correction * servo3sign)
     
     '-------------------------------------------------------------
     ' Set PWM values to drive servos 
@@ -277,9 +278,9 @@ PRI  ProcessYaw   | absYaw , yawRate
  yawCorrection  := (yawCorrection  <# maxYawCorrection) #> minYawCorrection
 
   '--------------------------------------------------------------- 
-  ' Add to center and allow for reversal
-  '---------------------------------------------------------------  
-  tailServoPos := rx_rudder_center + (yawCorrection * tailServoSign)
+  ' Add to trimmed center and allow for reversal
+  '---------------------------------------------------------------
+  tailServoPos := tailServoCenter + (yawCorrection * tailServoSign)
 
   
 PRI  IntegrateWithAngularDecay | rollRate, pitchRate, absRoll, absPitch 
@@ -359,10 +360,10 @@ PRI StartupIO
   rxman_cog := rxman.start
   
   if(not rxman_cog)
-    utilities.SignalError
+    utilities.SignalNFlashes(2)
 
   utilities.pause(50) '  Give receiver manager some time to settle
-  rx_rudder_center := rxman.getraw(constants.GetRX_RUDDER_OFFSET)
+  rx_rudder_center := rxman.getRudder 
    
   '-----------------------------------------
   ' Startup a cog to get gyro data
@@ -376,7 +377,7 @@ PRI StartupIO
       gyrofilter_cog := itg3200.start(parms.getGyroXAxisAddress, parms.getGyroYAxisAddress, parms.getGyroZAxisAddress, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN)
 
   if(not gyrofilter_cog)
-      utilities.SignalErrorRapid 
+      utilities.SignalNFlashes(3) 
 
   '----------------------------------------------
   ' Launch cog to manage PWM outputs to servos
@@ -385,7 +386,7 @@ PRI StartupIO
   sm_cog := servoman.Start(@servo1pos, @servo2pos, @servo3pos, @tailServoPos, parms.getPulseInterval)
   
   if(not sm_cog)
-    utilities.SignalError
+    utilities.SignalNFlashes(4)
 
 
       
@@ -475,7 +476,15 @@ PRI InitializeParameters  |i, swashRingMargin, servoRange, collectiveMargin
   if(parms.getReverseYawGyro)
      yawSign := -1
 
-  '--------------------   
+  '--------------------
+
+  ' Adjust centers based on trim values and reversal settings
+  
+  servo1Center    := servoMan#SERVO_CENTER + (parms.getServo1Trim    * servoMan#ONE_PERCENT_SERVO_THROW) * servo1Sign 
+  servo2Center    := servoMan#SERVO_CENTER + (parms.getServo2Trim    * servoMan#ONE_PERCENT_SERVO_THROW) * servo2Sign
+  servo3Center    := servoMan#SERVO_CENTER + (parms.getServo3Trim    * servoMan#ONE_PERCENT_SERVO_THROW) * servo3Sign
+  tailServoCenter := servoMan#SERVO_CENTER + (parms.getTailServoTrim * servoMan#ONE_PERCENT_SERVO_THROW) * tailServoSign
+    
 '-------------------------------------------------------------------------
      
 '------------------------------------------------------------

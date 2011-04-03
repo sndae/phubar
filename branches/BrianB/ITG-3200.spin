@@ -120,7 +120,8 @@ PUB GyroLoop | value, ack, lastTime, firstx0, secondx0
   secondx0 := x0
   
   if(||(secondx0 - firstx0) > (constants.GetNoise * 3))
-      utilities.SignalErrorRapid
+      outa[statusLEDpin]~ 
+      utilities.SignalNFlashes(5)
       RETURN
      
   LONG[xZeroAddr] := x0       'Update gyro zero values   
