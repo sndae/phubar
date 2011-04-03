@@ -119,14 +119,13 @@ Loop          mov       dira,ServoPin1    'Set the direction of the "ServoPin1" 
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
 
-              mov       dira,ServoPin4    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
-              rdlong    HighTime,p4       'Read the "position4" variable from Main RAM and store it as "HighTime"
-              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address    
-              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin4 high b/c rest are inputs)            
+              mov       dira,ServoPin4    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
+              rdlong    HighTime,p4       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
+              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
-              waitcnt   counter,LowTime   'Wait until "cnt" matches "counter" then add a 20ms delay to "counter" value 
-              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin4 low b/c rest are inputs)
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
+              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
 
               mov       dira,ServoPin5    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
               rdlong    HighTime,p5       'Read the "position4" variable from Main RAM and store it as "HighTime"
