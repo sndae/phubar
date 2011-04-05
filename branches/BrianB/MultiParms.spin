@@ -638,6 +638,9 @@ PRI Setup | response
         'serio.tx($D)
 
     serio.str(string(", (s)ervo-auto-setup"))
+      'serio.tx($D)
+
+    serio.str(string(", (h)old servos"))
     serio.tx($D)
 
         
@@ -696,6 +699,10 @@ PRI Setup | response
 
       if(constants#HARDWARE_VERSION == 3)
           EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-10,10    )
+
+    if((response) == "h")               'Go to hold servos functionality
+       HoldServos
+       NEXT
      
  
 
@@ -1220,6 +1227,36 @@ PRI GyroAutoSetup  | revsense
       gyrofilter.stop
   if(constants#HARDWARE_VERSION == 3)  'Need to stop gyro so it won't clash with eeprom writes
       itg3200.stop
+
+
+PRI HoldServos | sm_cog, s1, s2, s3, s4
+  '----------------------------------------------------------
+  ' Hold all servos centered to allow mechanical adjustments
+  '----------------------------------------------------------
+
+  serio.str(string("To hold servos centered for mechanical adjustment, hit enter..."))
+  serio.tx($D)
+  serio.rx
+
+  sm.Stop
+
+  sm_cog := sm.Start(@s1, @s2, @s3, @s4, GetPulseInterval)
+  if(not sm_cog)
+    utilities.SignalError
+    serio.str(string("Servo manager could not be started, returning to setup menu..."))
+    RETURN
+
+  sm.CenterServos
+
+  serio.str(string("Servos have been centered. To stop and return to main menu, hit enter..."))
+  serio.tx($D)
+  serio.rx
+
+  serio.str(string("Servos no longer being held centered, returning to setup menu..."))
+  serio.tx($D)
+
+  sm.Stop
+
 
 PRI TextStarMenu | response
 
