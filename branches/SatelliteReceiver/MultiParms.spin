@@ -577,7 +577,7 @@ PRI Tune  | response
        ' For PhuBar3
       if(constants#HARDWARE_VERSION == 3)
 
-          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,500             )
+          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,1000             )
           EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,300          )
           EditInteger(string("HH Deadband"),       @headingHoldDeadband[activeModelIndex],0,2000    )
           setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive ))
