@@ -46,6 +46,7 @@ CON
   STATUS_LED_PIN       = 3        ' LED to signal status of PhuBar
   SERIAL_TX_PIN        = 30
   SERIAL_RX_PIN        = 31
+  DEBUGWITHSERIAL      = TRUE        'FALSE to keep program running for serial debugging                                                                       
 
   YAW_LIMIT            = 244_000  ' Equates to about 180 degrees of yaw travel
                                   ' that we track before we stop integrating it
@@ -83,6 +84,7 @@ CON
   PB3_SERVO_2_PIN      = 11
   PB3_SERVO_3_PIN      = 10
   PB3_SERVO_4_PIN      = 9
+  PB3_SERVO_5_PIN      = 16 
   PB3_PINMASK          = %0011_1001_0000_0000_0000_0000
   PB3_RX_RUDDER_OFFSET = 0
   PB3_RX_AUX_OFFSET      = PB3_RX_AUX_PIN       - PB3_RX_RUDDER_PIN  ' Offsets into Pins[8] of RC_Receiver.spin
@@ -212,6 +214,9 @@ PUB GetSERVO_4_PIN
     return PB2_SERVO_4_PIN
  else
     return PB3_SERVO_4_PIN
+
+PUB GetSERVO_5_PIN
+  return PB3_SERVO_5_PIN
 
 
 PUB  getEEPROM_PARMS_START
