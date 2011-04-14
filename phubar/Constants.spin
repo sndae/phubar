@@ -8,10 +8,10 @@
 
 
 PUB SoftwareVersion
-   return string("3.4")   'Current version 
+   return string("3.4.1")   'Current version 
 
 {    Versions
-         3.5   in progress - adding servo trim parms.
+         3.4.1 added servo trim parms.
                added SignalNFlashes to distinguish different error conditions
          3.4   Added all setup parms to TextStar code, except model name (need keyboard to enter)
                Removed redundant StopIO in InitializeParameters
