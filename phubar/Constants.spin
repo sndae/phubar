@@ -8,9 +8,11 @@
 
 
 PUB SoftwareVersion
-   return string("3.4.1")   'Current version 
+   return string("3.5")   'Current version 
 
 {    Versions
+         3.5   Added support for spektrum satellite receiver, connecting to Aileron input port
+               with Rudder input port re-used for throttle output.
          3.4.1 added servo trim parms.
                added SignalNFlashes to distinguish different error conditions
          3.4   Added all setup parms to TextStar code, except model name (need keyboard to enter)
