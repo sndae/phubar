@@ -59,6 +59,8 @@ VAR
   long  gyroXAxisAssignment[10], gyroYAxisAssignment[10], gyroZAxisAssignment[10]
   long  headingHoldDeadband[10]
   long  swashRing[10]
+  long  collectiveLimit[10]
+  long  servo1Trim[10], servo2Trim[10], servo3Trim[10], tailServoTrim[10]
   ' Add new parms here
   '  and don't forget to change eeprom copy endpoints 
   '  Make sure constants#PB2_EEPROM_PARMS_START is far enough below
@@ -87,6 +89,9 @@ PUB Stop
 '--------------------
 ' Accessors
 '--------------------
+PUB getCollectiveLimit
+  return collectiveLimit[activeModelIndex]
+
 PUB getSwashRing
   return swashRing[activeModelIndex]
   
@@ -114,7 +119,18 @@ PUB getPhaseAngle
 PUB getPulseInterval
   return pulseInterval[activeModelIndex]
 
+PUB getServo1Trim
+  return servo1Trim[activeModelIndex]
 
+PUB getServo2Trim
+  return servo2Trim[activeModelIndex]
+
+PUB getServo3Trim
+  return servo3Trim[activeModelIndex]
+
+PUB getTailServoTrim
+  return tailServoTrim[activeModelIndex]
+  
 PUB getServo1Theta
   return servo1Theta[activeModelIndex]
 
@@ -286,6 +302,7 @@ PUB SetDefaults   | index
   'headingHoldDeadband :=               1800
   'headingHoldActive   :=               FALSE
   'swashRing         :=         50        50  
+  'collectiveLimit   :=         ???       ???
   '----------------------------------------------------
          
   activeModelIndex   := 0                         'Can have 0-9 models, but default to 0
@@ -306,7 +323,12 @@ PUB SetDefaults   | index
      servo3theta[index]      := 0
      yawAngularGain[index]   := 45        ' 0 to 100 
      yawRateGain[index]      := 45        ' 0 to 100
-     swashRing               := 50        ' 50% range limit on swash servos to prevent binding
+     swashRing[index]        := 50        ' 50% range limit on swash servos to prevent binding
+     collectiveLimit[index]  := 50        ' 50% range limit on collective pitch to prevent binding
+     servo1Trim[index]       := 0         ' 0 to +/- 10% trim on servo center
+     servo2Trim[index]       := 0
+     servo3Trim[index]       := 0
+     tailServoTrim[index]    := 0
      
      gyroZAxisAssignment[index] := "Y"    ' Z axis is Yaw
      headingHoldDeadband[index] := 1600   ' 2% deadband
@@ -330,7 +352,8 @@ PUB SetDefaults   | index
   servo3theta[9]         := -300
   yawAngularGain[9]      := 45        ' 0 to 100 
   yawRateGain[9]         := 45        ' 0 to 100
-  swashRing              := 50        ' 50% range limit on swash servos to prevent binding
+  swashRing[9]           := 50        ' 50% range limit on swash servos to prevent binding
+  collectiveLimit[9]     := 50        ' 50% range limit on collective pitch to prevent binding
      
   gyroZAxisAssignment[9] := "P"
   headingHoldDeadband[9] := 1600
@@ -340,11 +363,11 @@ PUB SetDefaults   | index
   
 PUB UpdateParmsFromEeprom
 
-  eeprom.ToRam(@activeModelIndex, @swashRing[9] + 3, constants.getEEPROM_PARMS_START) 
+  eeprom.ToRam(@activeModelIndex, @tailServoTrim[9] + 3, constants.getEEPROM_PARMS_START)
 
 PUB SaveParmsToEeprom
 
-  eeprom.FromRam(@activeModelIndex, @swashRing[9] + 3, constants.getEEPROM_PARMS_START) 
+  eeprom.FromRam(@activeModelIndex, @tailServoTrim[9] + 3, constants.getEEPROM_PARMS_START)
   
 PUB  AllowUserToEdit
   '-----------------------------------------------------------------------------
@@ -410,6 +433,7 @@ PRI DumpTuningParameters
     DumpInteger(string("Angular Decay"),       getAngularDecay)
     DumpInteger(string("Phase Angle"),         getPhaseAngle)
     DumpInteger(string("Swash Ring"),          getSwashRing)
+    DumpInteger(string("Collective Limit"),    getCollectiveLimit)
     '----------------
     ' For PhuBar3
     if(constants#HARDWARE_VERSION == 3)
@@ -435,21 +459,35 @@ PRI DumpSetupParameters
     DumpInteger(string("Servo Pulse Interval"),         getPulseInterval)
     DumpAxis(string("Gyro X Axis"),                     GyroXAxisAssignment[activeModelIndex])
     DumpAxis(string("Gyro Y Axis"),                     GyroYAxisAssignment[activeModelIndex])
+    
+    if(constants#HARDWARE_VERSION == 3)
+       DumpAxis(string("Gyro Z Axis"),                  gyroZAxisAssignment[activeModelIndex])
+       
     DumpSwitch(string("Reverse Pitch Gyro"),            getReversePitchGyro)        
     DumpSwitch(string("Reverse Roll Gyro"),             getReverseRollGyro)
+    
+    if(constants#HARDWARE_VERSION == 3)
+        DumpSwitch(string("Reverse Yaw Gyro"),          getreverseYawGyro)
+        
     DumpInteger(string("Servo 1 Theta"),                getServo1theta)
     DumpInteger(string("Servo 2 Theta"),                getServo2theta)
-    DumpInteger(string("Servo 3 Theta"),                getServo3theta)      
+    DumpInteger(string("Servo 3 Theta"),                getServo3theta)
+    
+    DumpInteger(string("Servo 1 Trim"),                 getServo1Trim)
+    DumpInteger(string("Servo 2 Trim"),                 getServo2Trim)
+    DumpInteger(string("Servo 3 Trim"),                 getServo3Trim)
+    if(constants#HARDWARE_VERSION == 3)
+       DumpInteger(string("Tail Servo Trim"),           getTailServoTrim)        
+        
     DumpSwitch(string("Reverse Servo 1 "),              getServo1reverse)
     DumpSwitch(string("Reverse Servo 2 "),              getServo2reverse)
     DumpSwitch(string("Reverse Servo 3 "),              getServo3reverse)
-
-    '----------------
-    ' For PhuBar3
+    
     if(constants#HARDWARE_VERSION == 3)
-       DumpAxis(string("Gyro Z Axis"),                     gyroZAxisAssignment[activeModelIndex])
-       DumpSwitch(string("Reverse Yaw Gyro"),              getreverseYawGyro)
-       DumpSwitch(string("Reverse Tail Servo "),           getTailServoReverse)
+       DumpSwitch(string("Reverse Tail Servo "),        getTailServoReverse)
+       
+      
+      
 
     '----------------
     
@@ -565,13 +603,14 @@ PRI Tune  | response
        NEXT
       
     if((response) == "c")
-       EditInteger(string("Pitch Rate Gain"),      @pitchRateGain[activeModelIndex],   0,100    )
-       EditInteger(string("Pitch Angular Gain"),   @pitchAngularGain[activeModelIndex],0,100    )
-       EditInteger(string("Roll Rate Gain"),       @rollRateGain[activeModelIndex],    0,100    )
-       EditInteger(string("Roll Angular Gain"),    @rollAngularGain[activeModelIndex], 0,100    )
-       EditInteger(string("Angular Decay"),        @angularDecay[activeModelIndex],    0,300    )
-       EditInteger(string("Phase Angle"),          @phaseAngle[activeModelIndex],      -90,90   )         
-       EditInteger(string("Swash Ring"),           @swashRing[activeModelIndex],       25,100   )         
+       EditInteger(string("Pitch Rate Gain"),      @pitchRateGain[activeModelIndex],        0,100    )
+       EditInteger(string("Pitch Angular Gain"),   @pitchAngularGain[activeModelIndex],     0,100    )
+       EditInteger(string("Roll Rate Gain"),       @rollRateGain[activeModelIndex],         0,100    )
+       EditInteger(string("Roll Angular Gain"),    @rollAngularGain[activeModelIndex],      0,100    )
+       EditInteger(string("Angular Decay"),        @angularDecay[activeModelIndex],         0,300    )
+       EditInteger(string("Phase Angle"),          @phaseAngle[activeModelIndex],           -90,90   )         
+       EditInteger(string("Swash Ring"),           @swashRing[activeModelIndex],            25,100   )         
+       EditInteger(string("Collective Limit"),     @collectiveLimit[activeModelIndex],      25,100    )
 
        '----------------------
        ' For PhuBar3
@@ -629,22 +668,38 @@ PRI Setup | response
       EditString (string("Model Name"),           @modelName[activeModelIndex*4]             )
       EditInteger(string("Servo Pulse Interval"), @pulseInterval[activeModelIndex],5,20      )
       EditAxis   (string("Gyro X Axis"),          @gyroXAxisAssignment[activeModelIndex]     )
-      EditAxis   (string("Gyro Y Axis"),          @gyroYAxisAssignment[activeModelIndex]     )   
+      EditAxis   (string("Gyro Y Axis"),          @gyroYAxisAssignment[activeModelIndex]     )
+
+      if(constants#HARDWARE_VERSION == 3)
+          EditAxis   (string("Gyro Z Axis"),      @gyroZAxisAssignment[activeModelIndex]     )
+
       setReversePitchGyro(EditSwitch (string("Reverse Pitch Gyro"),   getreversePitchGyro    ))
-      setReverseRollGyro(EditSwitch (string("Reverse Roll Gyro"),    getreverseRollGyro      ))
+      setReverseRollGyro(EditSwitch (string("Reverse Roll Gyro"),     getreverseRollGyro     ))
+
+      if(constants#HARDWARE_VERSION == 3)
+         setReverseYawGyro( EditSwitch (string("Reverse Yaw Gyro"),     getReverseYawGyro    ))
+
       EditInteger(string("Servo 1 Theta"),        @servo1theta[activeModelIndex],-360,360    )
       EditInteger(string("Servo 2 Theta"),        @servo2theta[activeModelIndex],-360,360    )
-      EditInteger(string("Servo 3 Theta"),        @servo3theta[activeModelIndex],-360,360    )      
+      EditInteger(string("Servo 3 Theta"),        @servo3theta[activeModelIndex],-360,360    )
+
       setServo1reverse( EditSwitch (string("Reverse Servo 1 "),     getServo1reverse         ))
       setServo2Reverse( EditSwitch (string("Reverse Servo 2 "),     getServo2reverse         ))
-      setServo3Reverse( EditSwitch (string("Reverse Servo 3 "),     getServo3reverse         ))      
+      setServo3Reverse( EditSwitch (string("Reverse Servo 3 "),     getServo3reverse         ))
+      
+      if(constants#HARDWARE_VERSION == 3)      
+          setTailServoReverse( EditSwitch (string("Reverse Tail Servo"), getTailServoReverse ))
+           
+      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-10,10       )
+      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-10,10       )
+      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-10,10       )
 
-      '----------------------
-      ' For PhuBar3      
       if(constants#HARDWARE_VERSION == 3)
-         EditAxis   (string("Gyro Z Axis"),                             @gyroZAxisAssignment[activeModelIndex]     )
-         setReverseYawGyro( EditSwitch (string("Reverse Yaw Gyro"),     getReverseYawGyro        ))
-         setTailServoReverse( EditSwitch (string("Reverse Tail Servo"), getTailServoReverse      )) 
+          EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-10,10    )
+     
+ 
+
+          
       '----------------------
 
       serio.tx($D)
@@ -833,24 +888,29 @@ PRI CopyModel   | fm, tm , tempstr
   tm := StrToDec(@tempstr) - 1
 
   CopyModelName(fm, tm)
-  pitchAngularGain[tm]    := pitchAngularGain[fm]
-  pitchRateGain[tm]       := pitchRateGain[fm]
-  rollAngularGain[tm]     := rollAngularGain[fm]
-  rollRateGain[tm]        := rollRateGain[fm] 
-  angularDecay[tm]        := angularDecay[fm]
-  phaseAngle[tm]          := phaseAngle[fm] 
-  pulseInterval[tm]       := pulseInterval[fm]
-  gyroXAxisAssignment[tm] := gyroXAxisAssignment[fm]
-  gyroYAxisAssignment[tm] := gyroYAxisAssignment[fm] 
-  servo1theta[tm]         := servo1theta[fm]
-  servo2theta[tm]         := servo2theta[fm]  
-  servo3theta[tm]         := servo3theta[fm] 
-  yawAngularGain[tm]      := yawAngularGain[fm] 
-  yawRateGain[tm]         := yawRateGain[fm] 
-  gyroZAxisAssignment[tm] := gyroZAxisAssignment[fm]
-  headingHoldDeadband[tm] := headingHoldDeadband[fm] 
-  swashRing[tm]           := swashRing[fm] 
-  flags[tm]               := flags[fm] 
+  pitchAngularGain[tm]     := pitchAngularGain[fm]
+  pitchRateGain[tm]        := pitchRateGain[fm]
+  rollAngularGain[tm]      := rollAngularGain[fm]
+  rollRateGain[tm]         := rollRateGain[fm] 
+  angularDecay[tm]         := angularDecay[fm]
+  phaseAngle[tm]           := phaseAngle[fm] 
+  pulseInterval[tm]        := pulseInterval[fm]
+  gyroXAxisAssignment[tm]  := gyroXAxisAssignment[fm]
+  gyroYAxisAssignment[tm]  := gyroYAxisAssignment[fm] 
+  servo1theta[tm]          := servo1theta[fm]
+  servo2theta[tm]          := servo2theta[fm]  
+  servo3theta[tm]          := servo3theta[fm]
+  servo1Trim[tm]           := servo1Trim[fm] 
+  servo2Trim[tm]           := servo2Trim[fm] 
+  servo3Trim[tm]           := servo3Trim[fm] 
+  tailServoTrim[tm]        := tailServoTrim[fm] 
+  yawAngularGain[tm]       := yawAngularGain[fm] 
+  yawRateGain[tm]          := yawRateGain[fm] 
+  gyroZAxisAssignment[tm]  := gyroZAxisAssignment[fm]
+  headingHoldDeadband[tm]  := headingHoldDeadband[fm] 
+  swashRing[tm]            := swashRing[fm] 
+  collectiveLimit[tm]      := collectiveLimit[fm]
+  flags[tm]                := flags[fm] 
   
   serio.tx($D)
   serio.str(string("Model "))
@@ -894,10 +954,10 @@ PRI SelectModel  | response, index, tempstr[3]
     lastModelIndex := activeModelIndex
     activeModelIndex := response -1  'Convert ascii char to equiv numeral 0 thru 9
 
-PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4 ,s5
+PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4 ,s5 , PWMActive
 
   sm.Stop
-  sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval)  
+  sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval, @PWMActive)  
   if(not sm_cog)
     utilities.SignalError
     
@@ -1309,6 +1369,9 @@ PRI TextStarTune | response, tempbit
       if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Swash Ring"),        @swashRing[activeModelIndex],25,100,1)         
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditInteger(string("Collective Limit"),  @collectiveLimit[activeModelIndex],25,100,1)
       if((response == "B") or (response == -1))
          QUIT
 
