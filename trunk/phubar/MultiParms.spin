@@ -493,7 +493,7 @@ PRI DumpSetupParameters
     
 
                
-PRI EditParameters | response
+PRI EditParameters | response, now
   '---------------------------------------------------------------------------------
   ' Use Robert Quattlebaum's Settings object to store/retrieve parameters in eeprom
   '  allowing user to edit them via serial/USB to serial terminal tool
@@ -616,8 +616,8 @@ PRI Tune  | response
        ' For PhuBar3
       if(constants#HARDWARE_VERSION == 3)
 
-          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,100             )
-          EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,100          )
+          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,1000             )
+          EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,300          )
           EditInteger(string("HH Deadband"),       @headingHoldDeadband[activeModelIndex],0,2000    )
           setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive ))
       '----------------------
@@ -954,10 +954,10 @@ PRI SelectModel  | response, index, tempstr[3]
     lastModelIndex := activeModelIndex
     activeModelIndex := response -1  'Convert ascii char to equiv numeral 0 thru 9
 
-PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4
+PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4 ,s5 , PWMActive
 
   sm.Stop
-  sm_cog := sm.Start(@s1, @s2, @s3, @s4, GetPulseInterval)  
+  sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval, @PWMActive)  
   if(not sm_cog)
     utilities.SignalError
     

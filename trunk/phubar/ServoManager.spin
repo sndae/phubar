@@ -24,22 +24,28 @@ CON
 VAR
   long servocog
                                                                                                                               
-PUB Start(pos1address, pos2address, pos3address, pos4address, pulseInterval)  :okay
+PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseInterval, PWMActiveAddr)  :okay
                                                                                      
   p1:=pos1address     'Stores the address of the "position1" variable in the main Hub RAM as "p1"
   p2:=pos2address     'Stores the address of the "position2" variable in the main Hub RAM as "p2"
   p3:=pos3address     'Stores the address of the "position3" variable in the main Hub RAM as "p3"
   p4:=pos4address     'Stores the address of the "position4" variable in the main Hub RAM as "p4" 
+  p5:=pos5address     'Stores the address of the "position5" variable in the main Hub RAM as "p5"
   
   ServoPin1 := |< constants.GetSERVO_1_PIN     ' Set pins based on common constants file
   ServoPin2 := |< constants.GetSERVO_2_PIN     ' Overrides defaults in DAT section
   ServoPin3 := |< constants.GetSERVO_3_PIN
   ServoPin4 := |< constants.GetSERVO_4_PIN
+  ServoPin5 := |< constants.GetSERVO_5_PIN
+
+  PWMActive := LONG[PWMActiveAddr]         'Indicator of whether PMW receiver is being used, rather than
+                                           ' a satellite receiver.  Needed because rudder input is reused
+                                           ' for throttle output when satellite receiver is in use
     
-  LowTime := pulseInterval * 80_000            ' Overrides defaults in DAT section  
+  LowTime := pulseInterval * 80_000        ' Overrides defaults in DAT section  
   Stop
   CenterServos                             'Servos need to start at center to begin working right
-  okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "ThreeServos" cell
+  okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "FourServos" cell
       
 PUB Stop
   if servocog
@@ -48,6 +54,9 @@ PUB Stop
 
 PUB CenterServos
   LONG[p1] := LONG[p2] := LONG[p3] := LONG[p4] := SERVO_CENTER
+
+  'if PWMActive == FALSE
+    LONG[p5] := SERVO_MIN
 
 '---------------------------------------------
 ' Various test routines
@@ -115,14 +124,29 @@ Loop          mov       dira,ServoPin1    'Set the direction of the "ServoPin1" 
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
 
-              mov       dira,ServoPin4    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
-              rdlong    HighTime,p4       'Read the "position4" variable from Main RAM and store it as "HighTime"
+              mov       dira,ServoPin4    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
+              rdlong    HighTime,p4       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address    
+              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
+              add       counter,HighTime  'Add "HighTime" value to "counter" value
+              waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
+              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+
+              tjnz      PWMActive,#Cycle  'If PWMActive is not zero (TRUE), this means the Servo5 pin is being
+                                          ' used as a PWM input, so we skip the next section that would have used
+                                          ' it as an output.
+              
+              mov       dira,ServoPin5    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
+              rdlong    HighTime,p5       'Read the "position4" variable from Main RAM and store it as "HighTime"
               mov       counter,cnt       'Store the current system clock count in the "counter" cell's address    
               mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin4 high b/c rest are inputs)            
               add       counter,HighTime  'Add "HighTime" value to "counter" value
-              waitcnt   counter,LowTime   'Wait until "cnt" matches "counter" then add a 20ms delay to "counter" value 
+              waitcnt   counter,0         'Wait for high portion of pulse
+
+Cycle         mov       counter,cnt       'Get current sys clock
+              add       counter,LowTime   'Add Lowtime 
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin4 low b/c rest are inputs)
-              waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
+              waitcnt   counter,0         'Wait for LowTime to finish out the duty cycle
               jmp       #Loop             'Jump back up to the cell labled "Loop"                                      
                                                                                                                     
 'Constants and Variables:
@@ -132,13 +156,18 @@ ServoPin1     long      |<     14 '<------- This sets the pin that outputs the f
 ServoPin2     long      |<     13 '<------- This sets the pin that outputs the second servo signal (could be 0-31). 
 ServoPin3     long      |<     12 '<------- This sets the pin that outputs the third servo signal (could be 0-31).
 ServoPin4     long      |<     11 '<------- This sets the pin that outputs the third servo signal (could be 0-31).
+ServoPin5     long      |<     16 '<------- This sets the pin that outputs the third servo signal (could be 0-31).     
+
 p1            long      0                 'Used to store the address of the "position1" variable in the main RAM
 p2            long      0                 'Used to store the address of the "position2" variable in the main RAM  
 p3            long      0                 'Used to store the address of the "position3" variable in the main RAM
 p4            long      0                 'Used to store the address of the "position4" variable in the main RAM
+p5            long      0                 'Used to store the address of the "position5" variable in the main RAM
+
 AllOn         long      $FFFFFFFF         'This will be used to set all of the pins high (this number is 32 ones in binary)
 LowTime       long      800_000           'This works out to be a 10ms pause time with an 80MHz system clock. If the
                                           ' servo behaves erratically, this value can be changed to 1_600_000 (20ms pause)                                  
+PWMActive     long      0                 'Stores indicator of whether receiver input is PWM or not
 counter       res                         'Reserve one long of cog RAM for this "counter" variable                     
 HighTime      res                         'Reserve one long of cog RAM for this "HighTime" variable
               fit                         'Makes sure the preceding code fits within cells 0-495 of the cog's RAM
