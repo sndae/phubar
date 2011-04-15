@@ -8,9 +8,10 @@
 
 
 PUB SoftwareVersion
-   return string("3.5")   'Current version 
+   return string("3.5.1")   'Current version 
 
 {    Versions
+         3.5.1 Added HHDelay parameter
          3.5   Added support for spektrum satellite receiver, connecting to Aileron input port
                with Rudder input port re-used for throttle output.
          3.4.1 added servo trim parms.
