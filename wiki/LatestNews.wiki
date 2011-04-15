@@ -1,6 +1,6 @@
-April 14
+April 15
 
-Added Ryan Beall's code supporting Spektrum Satellite receivers. New code auto-detects whether a regular PWM receiver is connected to the Aileron input, or a satellite rcvr.  Requires routing 3.3v to power pin on aileron input instead of 5v.  Rudder port is used for throttle out.  
+Added version 3.5 tag in SVN. Includes Ryan Beall's code supporting Spektrum Satellite receivers. New code auto-detects whether a regular PWM receiver is connected to the Aileron input, or a satellite rcvr.  Requires routing 3.3v to power pin on aileron input instead of 5v.  Rudder port is used for throttle out.  
 
 March 21, 2011
 
