@@ -1,7 +1,7 @@
 {{RC_Receiver.spin
 
      Combines Tim Moore's code for reading PWM pulses on up to
-     8 pins (contiguous), and code for decoding serial input
+     8 pins (contiguous), and Ryan Beall's code for decoding serial input
      from a Spektrum Satellite receiver.
 
      On startup, it detects which type of input is active, and
@@ -37,17 +37,34 @@ Timmoore
 
 Spektrum Satellite section
 
-          Insert Docs here
+   Read serial data from Spektrum satellite receiver using FullDuplexSerialPlus object
+    
+                  +3V
+   ┌──────────────┐│     4.7K
+ ──┤ Satellite [] ┣┼──────────•  Propeller input pin 
+ ──┤ Receiver  [] ┣┘    Signal
+ ──┤ Output    [] ┣┐
+   └──────────────┘│
+                   GND(VSS)
 
+  *NOTE the power is 3v, not the 5v normally used for PWM receiver channels.
+
+     On the PhuBar3,this means adding a connector with wires to the 3v regulator, ground,
+     and the Aileron signal pin.
+
+     Also, with a satellite receiver, provisions must be made for throttle output,
+     which is done on the PhuBar3 by re-purposing the Rudder input channel as a Throttle out.
+     On some ESCs, this may require using a smaller resistor (2.2k) on the Rudder signal pin.                  
 
 -----------------------------------------------------------------------------------------------  
 }}
 Con
-  Mhz    = (80+10)                                      ' System clock frequency in Mhz. + init instructions
+  Mhz    = (80+10)        ' System clock frequency in Mhz. + init instructions
   
 OBJ
   constants     :  "Constants"
   serio         :  "FullDuplexSerialPlus"
+  utilities     :  "Utilities"                  'Misc utilities 
     
 VAR
   long  Cog
@@ -57,12 +74,13 @@ VAR
   long  PinMask
   long  delay
 
-  ' New vars for satellite receiver code
-  long  PWMActive, elevatorPulseWidth, aileronPulseWidth, auxPulseWidth, rudderPulseWidth
-  long  Stack[16]
+  ' Vars for satellite receiver code
+  long  PWMActive, elevatorPulseWidth, aileronPulseWidth, auxPulseWidth, rudderPulseWidth, throttlePulseWidth
+  long  FailSafeValues[8],satBuffer[16],rxByte,sync,buffPosition,lastSyncTime,dtSync,debugtoggle,debugindex
+  long  satPacketIndex,satPulse[7],satPacketTemp,satChNum
+  long  Stack[32]
 
-PUB start : sstatus
-
+PUB start(PWMActiveAddress) : sstatus
 '------------------------------------------------------------------
 ' Start the PWM rx cog and check for pulses within 1-2ms range
 ' If not within range, assume satellite is connected
@@ -78,26 +96,150 @@ PUB start : sstatus
 '
 '   NOTE: Set PWMActive to FALSE if satellite is active, so accessors
 '         will know where to get values from.
+    
+    repeat sstatus from 0 to 7     'Zero the pulse width buffers
+         Pins[sstatus] := 0
+         
+    utilities.pause(100)           'Give rc cog time to update.  If no pulses are received
+                                          ' the buffers will stay at zero
+                                    
+    if((getAileron < 60000))       'If measured pulses are well below 1-2ms range, we can
+        PWMActive := FALSE         ' assume a satellite receiver is being used
+        stop
+        sstatus := startSatellite
 
-
-                '  Insert code here
-
-
+    LONG[PWMActiveAddress] := PWMActive  'Notify main that PWM receiver active so
+                                         ' it can pass this along to Servo Manager  
 '-------------------------------------------------------------------
+PUB startSatellite  
 
-PUB startSatellite
+  serio.start(Constants.GetRX_AILERON_PIN, constants#SERIAL_TX_PIN, 0, 115200) 'Start serial I/O
+  serio.rxflush
+  Cog := cognew(runSatellite, @Stack) + 1   'Launch cog
+  RETURN Cog 
 
-  serio.start(Constants.GetRX_AILERON_PIN, Constants.GetRX_ELEVATOR_PIN, 0, 115200) 'Start serial I/O 
+
+PUB runSatellite 
+'   Loops and parses packets from satellite rcvr
+
+satelliteInit
+
+ repeat
+  if sync == TRUE
+     'rxByte := serio.rxcheck    
+      rxByte := serio.rxtime(30)
+      
+    if rxByte == -1
+      'serio.dec(rxByte)
+      sync := FALSE
+      lastSyncTime := cnt
+      
+    else
+      'serio.tx($D)
+      'serio.hex(rxByte,2)
+      satBuffer[buffPosition] := rxByte
+      buffPosition++
+      if buffPosition > 15
+        buffPosition := 0
+        sync := FALSE
+        lastSyncTime := cnt
+
+        satelliteParse
+ 
+             
+  else
+    dtSync := utilities.msPassed(cnt,lastSyncTime) 
+    if dtSync > 7
+      
+      buffPosition := 0
+      sync := TRUE
+
+    'serio.tx($D)
+    'serio.str(string(" normal out "))
+    'debugtoggle := getraw(constants.GetRX_RUDDER_OFFSET)
+    'serio.dec(debugtoggle)
+      
+PUB satelliteParse
+         
+  satPacketIndex := 2
+  repeat while satPacketIndex < 15
+    satPacketTemp := (satBuffer[satPacketIndex] <<8) + satBuffer[satPacketIndex + 1] 
+    
+    satChNum := (satPacketTemp & %0011110000000000)>>10
+    
+    satPulse[satChNum] := satPacketTemp & %0000001111111111
+    satPulse[satChNum] += 1000
+
+    satPulse[satChNum] *= (clkfreq/1000000)  'convert to ticks
+    
+    satPacketIndex := satPacketIndex + 2
+
   
-  Cog := cognew(runSatellite, @Stack) + 1   'Launch cog 
+  elevatorPulseWidth := satPulse[2]
+  aileronPulseWidth := satPulse[1]
+  auxPulseWidth := satPulse[5]
+  rudderPulseWidth := satPulse[3]
+  throttlePulseWidth := satPulse[0]
+  
+{  
+  serio.tx($D)
+  serio.str(string("0: "))
+  serio.dec(satPulse[0])
+  serio.str(string(" 1: "))
+  serio.dec(satPulse[1])
+  serio.str(string(" 2: "))
+  serio.dec(satPulse[2])
+  serio.str(string(" 3: "))
+  serio.dec(satPulse[3])
+  serio.str(string(" 4: "))
+  serio.dec(satPulse[4])
+  serio.str(string(" 5: "))
+  serio.dec(satPulse[5])
+  serio.str(string(" 6: "))
+  serio.dec(satPulse[6])
+  
+ }   
+          
+    
+PUB satelliteInit  
 
+FailSafeValues[0] := 1500
+FailSafeValues[1] := 1500
+FailSafeValues[2] := 1000
+FailSafeValues[3] := 1500
+FailSafeValues[4] := 1500
+FailSafeValues[5] := 1500
+FailSafeValues[6] := 1500
+FailSafeValues[7] := 1295
 
-PUB runSatellite
+satBuffer[0] := 0
+satBuffer[1] := 0
+satBuffer[2] := 0
+satBuffer[3] := 0
+satBuffer[4] := 0
+satBuffer[5] := 0
+satBuffer[6] := 0
+satBuffer[7] := 0
+satBuffer[8] := 0
+satBuffer[9] := 0
+satBuffer[10] := 0
+satBuffer[11] := 0
+satBuffer[12] := 0
+satBuffer[13] := 0
+satBuffer[14] := 0
+satBuffer[15] := 0
 
+sync := FALSE
+buffPosition :=0
+lastSyncTime := 0
+dtSync := 0
 
-'   Insert code here that loops and parses packets from satellite,
-'     placing data into elevatorPulseWidth, aileronPulseWidth, auxPulseWidth, rudderPulseWidth
+rxByte := -1
+serio.rxflush
+utilities.pause(2)
 
+debugtoggle := TRUE
+debugindex := 0
 
    
 PUB startPWM : sstatus
@@ -163,6 +305,9 @@ PUB getRudder
    else
       return rudderPulseWidth
 
+PUB getThrottle
+    return throttlePulseWidth
+      
 '-----------------------------------------------------------
     
 PUB get(_pin) : value

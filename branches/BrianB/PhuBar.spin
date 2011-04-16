@@ -60,16 +60,16 @@ VAR
 
   long  pitchFilterBias, rollFilterBias
   long  pitch, roll, filteredPitchRate,filteredRollRate 
-  long  servo1command, servo2command, servo3command
+  long  servo1command, servo2command, servo3command, servo5Command
   long  decayValue  
 
   long  rollCorrection, pitchCorrection, collectiveCorrection  
   long  phasedPitchCorrection, phasedRollCorrection
   long  phasedS1Correction, phasedS2Correction,  phasedS3Correction 
  
-  long  rx_aileron_pulsewidth, rx_aux_pulsewidth, rx_elevator_pulsewidth   
+  long  rx_aileron_pulsewidth, rx_aux_pulsewidth, rx_elevator_pulsewidth, rx_throttle_pulsewidth   
   long  pitchGyroZero, rollGyroZero
-  long  servo1pos, servo2pos, servo3pos
+  long  servo1pos, servo2pos, servo3pos, servo5pos 
   long  servo1sign, servo2sign, servo3sign
 
   long  pitchSign, rollSign  
@@ -85,8 +85,9 @@ VAR
   long tailServoPos, swashRotSineTerm, swashRotCosTerm  
 
   long filteredYawRate, yawIncrement
-  long yawCorrection, cyclecount
+  long yawCorrection, cyclecount 
   long servo1Center, servo2Center, servo3Center, tailServoCenter
+  long PWMActive
 
   
 PUB PhUBar | i      ' This is the main entry point
@@ -145,13 +146,16 @@ PUB PhUBar | i      ' This is the main entry point
     rx_elevator_pulsewidth := rxman.getElevator
     rx_aileron_pulsewidth  := rxman.getAileron
     rx_aux_pulsewidth      := rxman.getAux
-    rx_rudder_pulsewidth   := rxman.getRudder  
+    rx_rudder_pulsewidth   := rxman.getRudder
+
+    'if PWMActive == FALSE
+    rx_throttle_pulsewidth   := rxman.getThrottle   
   
     
     ' Allow for gyro reversal and add RX cyclic inputs
 
     pitchCorrection := (pitchSign * pitchcorrection) + (rx_elevator_pulsewidth - servoman#SERVO_CENTER)
-    rollCorrection  := (rollSign * rollcorrection)   + (rx_aileron_pulsewidth  - servoman#SERVO_CENTER)
+    rollCorrection  := (rollSign * rollCorrection)   + (rx_aileron_pulsewidth  - servoman#SERVO_CENTER)
 
     collectiveCorrection := (rx_aux_pulsewidth - servoman#SERVO_CENTER) 
        
@@ -159,11 +163,11 @@ PUB PhUBar | i      ' This is the main entry point
 
     pitchCorrection := (pitchCorrection <# maxCorrection) #> minCorrection
     rollCorrection  := (rollCorrection  <# maxCorrection) #> minCorrection
-
-    ' Limit collective to within collective limit
+    
+     ' Limit collective to within collective limit
 
     collectiveCorrection := (collectiveCorrection <# maxCollectiveCorrection) #> minCollectiveCorrection
-       
+  
    '-------------------------------------------------------------------------------------------------
   ' Phase-Adjust the servo commands 
    '  With clockwise rotor rotation, a positive phase adjustment implies
@@ -191,7 +195,8 @@ PUB PhUBar | i      ' This is the main entry point
 
     servo1Command := servo1Center + (phasedS1Correction * servo1sign)
     servo2Command := servo2Center + (phasedS2Correction * servo2sign)
-    servo3Command := servo3Center + (phasedS3Correction * servo3sign)
+    servo3Command := servo3Center + (phasedS3Correction * servo3sign) 
+    servo5Command := rx_throttle_pulsewidth
     
     '-------------------------------------------------------------
     ' Set PWM values to drive servos 
@@ -199,6 +204,7 @@ PUB PhUBar | i      ' This is the main entry point
      servo1pos := (servo1Command <# maxServoPos) #> minServoPos 
      servo2pos := (servo2Command <# maxServoPos) #> minServoPos
      servo3pos := (servo3Command <# maxServoPos) #> minServoPos
+     servo5pos := (servo5Command <# maxServoPos) #> minServoPos
      
     if(constants#HARDWARE_VERSION == 3) 'Phubar3 has 3-axis, so include yaw
        ProcessYaw
@@ -282,6 +288,7 @@ PRI  ProcessYaw   | absYaw , yawRate
   '---------------------------------------------------------------
   tailServoPos := tailServoCenter + (yawCorrection * tailServoSign)
 
+
   
 PRI  IntegrateWithAngularDecay | rollRate, pitchRate, absRoll, absPitch 
    '-------------------------------------------------------------
@@ -357,13 +364,13 @@ PRI StartupIO
   '--------------------------------------- 
   rxman.stop
   
-  rxman_cog := rxman.start
+  rxman_cog := rxman.start(@PWMActive)
   
   if(not rxman_cog)
-    utilities.SignalNFlashes(2)
+    utilities.SignalError
 
   utilities.pause(50) '  Give receiver manager some time to settle
-  rx_rudder_center := rxman.getRudder 
+  rx_rudder_center := rxman.getRudder
    
   '-----------------------------------------
   ' Startup a cog to get gyro data
@@ -377,16 +384,16 @@ PRI StartupIO
       gyrofilter_cog := itg3200.start(parms.getGyroXAxisAddress, parms.getGyroYAxisAddress, parms.getGyroZAxisAddress, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN)
 
   if(not gyrofilter_cog)
-      utilities.SignalNFlashes(3) 
+      utilities.SignalErrorRapid 
 
   '----------------------------------------------
   ' Launch cog to manage PWM outputs to servos
   '----------------------------------------------
   servoman.Stop
-  sm_cog := servoman.Start(@servo1pos, @servo2pos, @servo3pos, @tailServoPos, parms.getPulseInterval)
+  sm_cog := servoman.Start(@servo1pos, @servo2pos, @servo3pos, @tailServoPos, @servo5pos, parms.getPulseInterval, @PWMActive)
   
   if(not sm_cog)
-    utilities.SignalNFlashes(4)
+    utilities.SignalError
 
 
       
@@ -486,7 +493,7 @@ PRI InitializeParameters  |i, swashRingMargin, servoRange, collectiveMargin
   tailServoCenter := servoMan#SERVO_CENTER + (parms.getTailServoTrim * servoMan#ONE_PERCENT_SERVO_THROW) * tailServoSign
     
 '-------------------------------------------------------------------------
-     
+       
 '------------------------------------------------------------
 ' Various useful config blocks for debugging using Viewport
 '------------------------------------------------------------
