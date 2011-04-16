@@ -58,6 +58,11 @@ PUB pause(ms) | t    'Pause for ms milliseconds
   repeat ms
     waitcnt(t += MS_001)
 
+PUB msPassed(now,then) | ms
+  'now and then are clk counts 
+  ms := ((now-then)*1000)/clkfreq
+  
+  return ms
 
 PUB BadError  'Rapid blink of LED signals error
 

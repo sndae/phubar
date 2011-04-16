@@ -117,7 +117,7 @@ PUB rxcheck : rxbyte
   '' Check if byte received (never waits)
   '' rxbyte returns -1 if no byte received, $00..$FF if byte
 
-  rxbyte--
+  rxbyte := -1 'rxbyte--
   if rx_tail <> rx_head
     rxbyte := rx_buffer[rx_tail]
     rx_tail := (rx_tail + 1) & $F
