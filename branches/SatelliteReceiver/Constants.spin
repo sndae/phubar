@@ -8,9 +8,10 @@
 
 
 PUB SoftwareVersion
-   return string("3.5")   'Current version 
+   return string("3.5.1")   'Current version 
 
 {    Versions
+         3.5.1 Added HHDelay parameter
          3.5   Added support for spektrum satellite receiver, connecting to Aileron input port
                with Rudder input port re-used for throttle output.
          3.4.1 added servo trim parms.
@@ -100,7 +101,7 @@ CON
 
   PB3_NOISE            = 4
   PB3_SAMPLE_RATE_HZ   = 100
-  PB3_ANGULAR_LIMIT    = 61_000  '61000 equates to roughly 45 degrees, the limit
+  PB3_ANGULAR_LIMIT    = 30_000  '61000 equates to roughly 45 degrees, the limit
                                'of travel we want for our virtual flybar.
 
   PB2_EEPROM_PARMS_START   = 31768  'A little below top of 32Kbyte eeprom
