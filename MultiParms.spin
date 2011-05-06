@@ -46,8 +46,11 @@ VAR
   long  gyroYvalue, gyroXvalue, gyroYrate, gyroXrate
   long  gyroZvalue, gyroZrate 
   long  yawGyroZero, yawFilterBias
-  
+
+  '-------------------------------------------------------------------------------------------  
   ' Variables that are saved in upper 32kb of the eeprom
+  '  Don't remove any or change the order because it will mess with
+  '  vars that users already have saved in their eeprom
   
   long  activeModelIndex, modelName[10*4]
   long  pitchangularGain[10], pitchrateGain[10]
@@ -61,10 +64,13 @@ VAR
   long  swashRing[10]
   long  collectiveLimit[10]
   long  servo1Trim[10], servo2Trim[10], servo3Trim[10], tailServoTrim[10]
+  long  HeadingHoldDelay[10] 
   ' Add new parms here
-  '  and don't forget to change eeprom copy endpoints 
   '  Make sure constants#PB2_EEPROM_PARMS_START is far enough below
   '  top of 32kb eeprom to hold all of these longs
+  
+  long  parmBlockEndpoint   ' Must be the last long in the block of vars to be saved in eeprom
+  '---------------------------------------------------------------------------------------------
                
 PUB go | a,b,c     ' For testing
 
@@ -89,6 +95,10 @@ PUB Stop
 '--------------------
 ' Accessors
 '--------------------
+
+PUB getHeadingHoldDelay
+  return HeadingHoldDelay[activeModelIndex]
+
 PUB getCollectiveLimit
   return collectiveLimit[activeModelIndex]
 
@@ -302,7 +312,8 @@ PUB SetDefaults   | index
   'headingHoldDeadband :=               1800
   'headingHoldActive   :=               FALSE
   'swashRing         :=         50        50  
-  'collectiveLimit   :=         ???       ???
+  'collectiveLimit   :=         ???      ???
+  'HeadingHoldDelay  :=         ???      ???
   '----------------------------------------------------
          
   activeModelIndex   := 0                         'Can have 0-9 models, but default to 0
@@ -329,7 +340,7 @@ PUB SetDefaults   | index
      servo2Trim[index]       := 0
      servo3Trim[index]       := 0
      tailServoTrim[index]    := 0
-     
+     HeadingHoldDelay[index] := 0
      gyroZAxisAssignment[index] := "Y"    ' Z axis is Yaw
      headingHoldDeadband[index] := 1600   ' 2% deadband
      flags[index] := %00000000
@@ -354,7 +365,10 @@ PUB SetDefaults   | index
   yawRateGain[9]         := 45        ' 0 to 100
   swashRing[9]           := 50        ' 50% range limit on swash servos to prevent binding
   collectiveLimit[9]     := 50        ' 50% range limit on collective pitch to prevent binding
-     
+  servo1Trim[9]          := 0         ' 0 to +/- 10% trim on servo center
+  servo2Trim[9]          := 0
+  servo3Trim[9]          := 0
+  HeadingHoldDelay[9]    := 0         ' 0 to 100, Used in some HH algorithms with lead compensation
   gyroZAxisAssignment[9] := "P"
   headingHoldDeadband[9] := 1600
 
@@ -363,11 +377,11 @@ PUB SetDefaults   | index
   
 PUB UpdateParmsFromEeprom
 
-  eeprom.ToRam(@activeModelIndex, @tailServoTrim[9] + 3, constants.getEEPROM_PARMS_START)
+  eeprom.ToRam(@activeModelIndex, @parmBlockEndpoint + 3, constants.getEEPROM_PARMS_START)
 
 PUB SaveParmsToEeprom
 
-  eeprom.FromRam(@activeModelIndex, @tailServoTrim[9] + 3, constants.getEEPROM_PARMS_START)
+  eeprom.FromRam(@activeModelIndex, @parmBlockEndpoint + 3, constants.getEEPROM_PARMS_START)
   
 PUB  AllowUserToEdit
   '-----------------------------------------------------------------------------
@@ -440,6 +454,7 @@ PRI DumpTuningParameters
        DumpInteger(string("Yaw Rate Gain"),                getYawRateGain)
        DumpInteger(string("Heading Hold Gain"),            getYawAngularGain)
        DumpInteger(string("Heading Hold Deadband"),        getHeadingHoldDeadband)
+       DumpInteger(string("Heading Hold Delay"),           getHeadingHoldDelay)
        DumpSwitch (string("Heading Hold On"),              getHeadingHoldActive) 
 
     '----------------
@@ -610,15 +625,16 @@ PRI Tune  | response
        EditInteger(string("Angular Decay"),        @angularDecay[activeModelIndex],         0,300    )
        EditInteger(string("Phase Angle"),          @phaseAngle[activeModelIndex],           -90,90   )         
        EditInteger(string("Swash Ring"),           @swashRing[activeModelIndex],            25,100   )         
-       EditInteger(string("Collective Limit"),     @collectiveLimit[activeModelIndex],      25,100    )
+       EditInteger(string("Collective Limit"),     @collectiveLimit[activeModelIndex],      25,100   )
 
        '----------------------
        ' For PhuBar3
       if(constants#HARDWARE_VERSION == 3)
 
-          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,1000             )
-          EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,300          )
+          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,1000            )
+          EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,1000         )
           EditInteger(string("HH Deadband"),       @headingHoldDeadband[activeModelIndex],0,2000    )
+          EditInteger(string("HH Delay"),          @headingHoldDelay[activeModelIndex],0,100        )
           setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive ))
       '----------------------
       serio.tx($D)
@@ -908,6 +924,7 @@ PRI CopyModel   | fm, tm , tempstr
   yawRateGain[tm]          := yawRateGain[fm] 
   gyroZAxisAssignment[tm]  := gyroZAxisAssignment[fm]
   headingHoldDeadband[tm]  := headingHoldDeadband[fm] 
+  headingHoldDelay[tm]     := headingHoldDelay[fm]
   swashRing[tm]            := swashRing[fm] 
   collectiveLimit[tm]      := collectiveLimit[fm]
   flags[tm]                := flags[fm] 
@@ -1388,6 +1405,9 @@ PRI TextStarTune | response, tempbit
       if((response == "B") or (response == -1))
         QUIT
       response := TextStarEditInteger(string("Yaw HH Deadband"), @headingHoldDeadband[activeModelIndex],0,2000,100)
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditInteger(string("Yaw HH Delay"),    @headingHoldDelay[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
         QUIT
       response := TextStarEditSwitch (string("HH Mode On"),      getHeadingHoldActive, @tempbit) '%10000000, %01111111)   'Masks for heading hold flag
