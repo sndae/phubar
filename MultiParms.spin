@@ -706,9 +706,9 @@ PRI Setup | response
       if(constants#HARDWARE_VERSION == 3)      
           setTailServoReverse( EditSwitch (string("Reverse Tail Servo"), getTailServoReverse ))
            
-      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-10,10       )
-      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-10,10       )
-      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-10,10       )
+      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-20,20       )
+      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-20,20       )
+      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-20,20       )
 
       if(constants#HARDWARE_VERSION == 3)
           EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-10,10    )
@@ -1059,7 +1059,7 @@ PRI GyroAutoSetup  | revsense
       itg3200.Stop
       'eeprom.Stop
       gyroFilterCog := itg3200.start(@gyroXrate, @gyroYrate, @gyroZrate, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN)
-
+                                                                                                                                                           
   utilities.pause(3000)
   serio.str(string("Done."))
   serio.tx($D)  

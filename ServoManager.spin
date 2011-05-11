@@ -42,7 +42,10 @@ PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseI
                                            ' a satellite receiver.  Needed because rudder input is reused
                                            ' for throttle output when satellite receiver is in use
     
-  LowTime := pulseInterval * 80_000        ' Overrides defaults in DAT section  
+  LowTime := pulseInterval * 80_000        ' Overrides defaults in DAT section
+
+
+  zoneTime := 24_000                       'ticks equl to 3ms                                       
   Stop
   CenterServos                             'Servos need to start at center to begin working right
   okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "FourServos" cell
@@ -102,46 +105,77 @@ DAT
 FourServos   org                         'Assembles the next command to the first cell (cell 0) in the new cog's RAM                                                                                                                     
 Loop          mov       dira,ServoPin1    'Set the direction of the "ServoPin1" to be an output (and all others to be inputs)  
               rdlong    HighTime,p1       'Read the "position1" variable from Main RAM and store it as "HighTime"
+              mov       templag,zoneTime  'move servo position into temp value
+              sub       templag,p1        'subtract servo position time from zone time (apx 3ms)
+              mov       lagServo1,templag 'move temp subtraction into servo 1 lag time
               mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
               mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin1 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin1 low b/c rest are inputs)
-
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address
+              add       counter,lagServo1 'add servo lag time to keep period stable
+              waitcnt   counter,0         'wait until total of 3ms - hightime has elapsed     
+              
               mov       dira,ServoPin2    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
               rdlong    HighTime,p2       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       templag,zoneTime  'move servo position into temp value
+              sub       templag,p2        'subtract servo position time from zone time (apx 3ms)
+              mov       lagServo2,templag 'move temp subtraction into servo 2 lag time
               mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
               mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address
+              add       counter,lagServo2 'add servo lag time to keep period stable
+              waitcnt   counter,0         'wait until total of 3ms - hightime has elapsed
               
               mov       dira,ServoPin3    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
               rdlong    HighTime,p3       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       templag,zoneTime  'move servo position into temp value
+              sub       templag,p3        'subtract servo position time from zone time (apx 3ms)
+              mov       lagServo3,templag 'move temp subtraction into servo 2 lag time
               mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
               mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address
+              add       counter,lagServo3 'add servo lag time to keep period stable
+              waitcnt   counter,0         'wait until total of 3ms - hightime has elapsed
 
               mov       dira,ServoPin4    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
               rdlong    HighTime,p4       'Read the "position2" variable from Main RAM and store it as "HighTime"
-              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address    
+              mov       templag,zoneTime  'move servo position into temp value
+              sub       templag,p4        'subtract servo position time from zone time (apx 3ms)
+              mov       lagServo4,templag 'move temp subtraction into servo 2 lag time
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
               mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
               waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
               mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address
+              add       counter,lagServo4 'add servo lag time to keep period stable
+              waitcnt   counter,0         'wait until total of 3ms - hightime has elapsed
 
               tjnz      PWMActive,#Cycle  'If PWMActive is not zero (TRUE), this means the Servo5 pin is being
                                           ' used as a PWM input, so we skip the next section that would have used
                                           ' it as an output.
               
-              mov       dira,ServoPin5    'Set the direction of the "ServoPin4" to be an output (and all others to be inputs)  
-              rdlong    HighTime,p5       'Read the "position4" variable from Main RAM and store it as "HighTime"
-              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address    
-              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin4 high b/c rest are inputs)            
+              mov       dira,ServoPin5    'Set the direction of the "ServoPin2" to be an output (and all others to be inputs)  
+              rdlong    HighTime,p5       'Read the "position2" variable from Main RAM and store it as "HighTime"
+              mov       templag,zoneTime  'move servo position into temp value
+              sub       templag,p5        'subtract servo position time from zone time (apx 3ms)
+              mov       lagServo5,templag 'move temp subtraction into servo 2 lag time
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address 
+              mov       outa,AllOn        'Set all pins on this cog high (really only sets ServoPin2 high b/c rest are inputs)               
               add       counter,HighTime  'Add "HighTime" value to "counter" value
-              waitcnt   counter,0         'Wait for high portion of pulse
+              waitcnt   counter,0         'Wait until cnt matches counter (adds 0 to "counter" afterwards)
+              mov       outa,#0           'Set all pins on this cog low (really only sets ServoPin2 low b/c rest are inputs)
+              mov       counter,cnt       'Store the current system clock count in the "counter" cell's address
+              add       counter,lagServo5 'add servo lag time to keep period stable
+              waitcnt   counter,0         'wait until total of 3ms - hightime has elapsed
 
 Cycle         mov       counter,cnt       'Get current sys clock
               add       counter,LowTime   'Add Lowtime 
@@ -166,6 +200,15 @@ p5            long      0                 'Used to store the address of the "pos
 
 AllOn         long      $FFFFFFFF         'This will be used to set all of the pins high (this number is 32 ones in binary)
 LowTime       long      800_000           'This works out to be a 10ms pause time with an 80MHz system clock. If the
+zoneTime      long      24_000
+
+lagServo1     long      0
+lagServo2     long      0
+lagServo3     long      0
+lagServo4     long      0
+lagServo5     long      0
+templag       long      0
+
                                           ' servo behaves erratically, this value can be changed to 1_600_000 (20ms pause)                                  
 PWMActive     long      0                 'Stores indicator of whether receiver input is PWM or not
 counter       res                         'Reserve one long of cog RAM for this "counter" variable                     
