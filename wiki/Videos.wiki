@@ -3,3 +3,9 @@ Video clips of CopterX 250SE with PhuBar3 running software version 3.3
 <wiki:video url="http://www.youtube.com/watch?v=8fUkXNvDBcA" width=640 height=505/>
 
 <wiki:video url="http://www.youtube.com/watch?v=zvotZfboQXM" width=640 height=505/>
+
+<br><br>
+May 11 clip of Ryan Beall demonstrating his improvements to the controller code by doing some 3D
+
+
+<wiki:video url="http://www.youtube.com/v/3XR0MGl6c3w" width=640 height=505/>
