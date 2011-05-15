@@ -1,3 +1,7 @@
+May 15, 2011
+
+Currently working with Ryan to parameterize his control equations so the user will be able to tune the flight behavior.
+
 May 11, 2011    
 
   First 3D flight for PhuBar3 ! ! ... See RCGroups thread
