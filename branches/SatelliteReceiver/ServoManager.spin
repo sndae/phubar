@@ -45,7 +45,7 @@ PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseI
   LowTime := pulseInterval * 80_000        ' Overrides defaults in DAT section
 
 
-  zoneTime := 24_000                       'ticks equl to 3ms                                       
+  zoneTime := 240_000                       'ticks equl to 3ms                                       
   Stop
   CenterServos                             'Servos need to start at center to begin working right
   okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "FourServos" cell
