@@ -67,6 +67,7 @@ VAR
   long  rollHiller[10], pitchHiller[10], bell[10]
   long  tailMaxServoPos[10], tailMinServoPos[10]
   long  collectiveFeedForward[10]
+  long  gyroFilterFrequency[10]
                                                     
   long  parmBlockEndpoint   ' Must be the last long in the block of vars to be saved in eeprom
   '---------------------------------------------------------------------------------------------
@@ -95,6 +96,9 @@ PUB Stop
 ' Accessors
 '--------------------
 
+PUB getGyroFilterFrequency
+  return gyroFilterFrequency[activeModelIndex]
+  
 PUB getRollHiller
   return rollHiller[activeModelIndex]
       
@@ -360,6 +364,7 @@ PUB SetDefaults   | index
      tailMaxServoPos[index]  := 50        ' 60-100% sets max limit point for tail servo throw
      tailMinServoPos[index]  := 50        ' 0-40% sets min limit point for tail servo throw
      collectiveFeedForward[index]  := 50  ' Feed-forward gain for collective compensation on yaw
+     gyroFilterFrequency[index] := 2      ' Low-pass filter frequency, 0=256hz, 1=188hz, 2=98hz,3=42hz,4=20hz,5=10hz,6=5hz
      gyroZAxisAssignment[index] := "Y"    ' Z axis is Yaw
      headingHoldDeadband[index] := 1600   ' 2% deadband
      flags[index] := %00000000
@@ -392,10 +397,11 @@ PUB SetDefaults   | index
   pitchHiller[9]         := 15         
   bell[9]                := 90                      
   tailMaxServoPos[9]     := 50        
-  tailMinServoPos[9]     := 50       
-  collectiveFeedForward[9]   := 50    
-  gyroZAxisAssignment[9] := "P"
-  headingHoldDeadband[9] := 1600
+  tailMinServoPos[9]        := 50       
+  collectiveFeedForward[9]  := 50
+  gyroFilterFrequency[9]    := 6         
+  gyroZAxisAssignment[9]    := "P"
+  headingHoldDeadband[9]    := 1600
 
   flags[9] := %00001000   
   
@@ -484,6 +490,7 @@ PRI DumpTuningParameters
        DumpInteger(string("Heading Hold Gain"),            getYawAngularGain)
        DumpInteger(string("Heading Hold Deadband"),        getHeadingHoldDeadband)
        DumpInteger(string("Collective Feed Forward"),      getCollectiveFeedForward)
+       DumpInteger(string("Gyro Filter Frequency"),        getGyroFilterFrequency)
  
 
     '----------------
@@ -662,15 +669,15 @@ PRI Tune  | response
        '----------------------
        ' For PhuBar3
       if(constants#HARDWARE_VERSION == 3)
-          EditInteger(string("Bell"),              @bell[activeModelIndex],                        0,150  )
-          EditInteger(string("Pitch Hiller"),      @pitchHiller[activeModelIndex],                 0,100  )
-          EditInteger(string("Roll Hiller"),       @rollHiller[activeModelIndex],                  0,100  )
-          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],                 0,1000 )
-          setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive                         ))
-          EditInteger(string("HH Gain"),           @yawAngularGain[activeModelIndex],              0,1000 )
-          EditInteger(string("HH Deadband"),       @headingHoldDeadband[activeModelIndex],         0,3000 )
-          EditInteger(string("Collective Feed Forward"),  @collectiveFeedForward[activeModelIndex],0,100  )
- 
+          EditInteger(string("Bell"),                   @bell[activeModelIndex],                        0,150  )
+          EditInteger(string("Pitch Hiller"),           @pitchHiller[activeModelIndex],                 0,100  )
+          EditInteger(string("Roll Hiller"),            @rollHiller[activeModelIndex],                  0,100  )
+          EditInteger(string("Yaw Rate Gain"),          @yawRateGain[activeModelIndex],                 0,1000 )
+          setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive                              ))
+          EditInteger(string("HH Gain"),                @yawAngularGain[activeModelIndex],              0,1000 )
+          EditInteger(string("HH Deadband"),            @headingHoldDeadband[activeModelIndex],         0,3000 )
+          EditInteger(string("Collective Feed Forward"),@collectiveFeedForward[activeModelIndex],       0,100  )
+          EditInteger(string("Gyro Filter Frequency"),  @gyroFilterFrequency[activeModelIndex],         0,6    ) 
       '----------------------
       serio.tx($D)
       
@@ -1091,7 +1098,7 @@ PRI GyroAutoSetup  | revsense
   if(constants#HARDWARE_VERSION == 3)
       itg3200.Stop
       'eeprom.Stop
-      gyroFilterCog := itg3200.start(@gyroXrate, @gyroYrate, @gyroZrate, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN)
+      gyroFilterCog := itg3200.start(@gyroXrate, @gyroYrate, @gyroZrate, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN, 6)
                                                                                                                                                            
   utilities.pause(3000)
   serio.str(string("Done."))
