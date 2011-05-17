@@ -55,7 +55,7 @@ VAR
   long  activeModelIndex, modelName[10*4]
   long  pitchangularGain[10], pitchrateGain[10]
   long  rollAngularGain[10], rollRateGain[10]
-  long  angularDecay[10], phaseAngle[10], pulseInterval[10] 
+  long  flybarSpeed[10], phaseAngle[10], pulseInterval[10] 
   long  flags[10]                                            'flags holds 32 switches for reversals, etc
   long  servo1theta[10], servo2theta[10], servo3theta[10]   
   long  yawAngularGain[10], yawRateGain[10] 
@@ -135,8 +135,8 @@ PUB getRollAngularGain
 PUB getRollRateGain
   return rollRateGain[activeModelIndex]
   
-PUB getAngularDecay
-  return angularDecay[activeModelIndex]
+PUB getflybarSpeed
+  return flybarSpeed[activeModelIndex]
 
 PUB getRxAuxActive
   return rxAuxActive
@@ -313,7 +313,7 @@ PUB SetDefaults   | index
   'pitchRateGain    := 21       21        25                  
   'rollAngularGain  := 63       63        63
   'rollRateGain     := 21       21        21                  
-  'angularDecay     := 75       65       100
+  'flybarSpeed      := 960      960       960
   'phaseAngle       := 0        0        -45
   'pulseInterval    := 10       10       10
   'reversePitchGyro := FALSE    FALSE   FALSE
@@ -342,7 +342,7 @@ PUB SetDefaults   | index
      pitchRateGain[index]    := 20        ' 0 to 100 
      rollAngularGain[index]  := 60        ' 0 to 100 
      rollRateGain[index]     := 20        ' 0 to 100   
-     angularDecay[index]     := 100       ' limit 1 to 300 percent 
+     flybarSpeed[index]     := 960        ' limit 1 to 300 percent 
      phaseAngle[index]       := 0         ' limit from -90 to +90
      pulseInterval[index]    := 20        ' servo pulse interval
      gyroXAxisAssignment[index] := "R"    ' assign axes based on how the unit is
@@ -377,7 +377,7 @@ PUB SetDefaults   | index
   pitchRateGain[9]       := 21        
   rollAngularGain[9]     := 63      
   rollRateGain[9]        := 15         
-  angularDecay[9]        := 100     
+  flybarSpeed[9]        := 960     
   phaseAngle[9]          := -45       
   pulseInterval[9]       := 10       
   gyroXAxisAssignment[9] := "Y"       
@@ -475,7 +475,7 @@ PRI DumpTuningParameters
     DumpInteger(string("Pitch Angular Gain"),  getPitchAngularGain)
     DumpInteger(string("Roll Rate Gain"),      getRollRateGain)
     DumpInteger(string("Roll Angular Gain"),   getRollAngularGain)
-    DumpInteger(string("Angular Decay"),       getAngularDecay)
+    DumpInteger(string("Flybar Speed"),        getflybarSpeed)
     DumpInteger(string("Phase Angle"),         getPhaseAngle)
     DumpInteger(string("Swash Ring"),          getSwashRing)
     DumpInteger(string("Collective Limit"),    getCollectiveLimit)
@@ -661,7 +661,7 @@ PRI Tune  | response
        EditInteger(string("Pitch Angular Gain"),   @pitchAngularGain[activeModelIndex],     0,100    )
        EditInteger(string("Roll Rate Gain"),       @rollRateGain[activeModelIndex],         0,100    )
        EditInteger(string("Roll Angular Gain"),    @rollAngularGain[activeModelIndex],      0,100    )
-       EditInteger(string("Angular Decay"),        @angularDecay[activeModelIndex],         0,300    )
+       EditInteger(string("Flybar Speed"),         @flybarSpeed[activeModelIndex],          0,100    )
        EditInteger(string("Phase Angle"),          @phaseAngle[activeModelIndex],           -90,90   )         
        EditInteger(string("Swash Ring"),           @swashRing[activeModelIndex],            25,100   )         
        EditInteger(string("Collective Limit"),     @collectiveLimit[activeModelIndex],      25,100   )
@@ -949,7 +949,7 @@ PRI CopyModel   | fm, tm , tempstr
   pitchRateGain[tm]        := pitchRateGain[fm]
   rollAngularGain[tm]      := rollAngularGain[fm]
   rollRateGain[tm]         := rollRateGain[fm] 
-  angularDecay[tm]         := angularDecay[fm]
+  flybarSpeed[tm]         := flybarSpeed[fm]
   phaseAngle[tm]           := phaseAngle[fm] 
   pulseInterval[tm]        := pulseInterval[fm]
   gyroXAxisAssignment[tm]  := gyroXAxisAssignment[fm]
@@ -1419,7 +1419,7 @@ PRI TextStarTune | response, tempbit
       response := TextStarEditInteger(string("Roll Angle Gain"),   @rollAngularGain[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
          QUIT
-      response := TextStarEditInteger(string("Angular Decay"),     @angularDecay[activeModelIndex],0,300,1)
+      response := TextStarEditInteger(string("Flybar Speed"),      @flybarSpeed[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Phase Angle"),       @phaseAngle[activeModelIndex],-90,90,1)         
