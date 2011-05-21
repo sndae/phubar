@@ -64,11 +64,11 @@ VAR
   long  swashRing[10]
   long  collectiveLimit[10]
   long  servo1Trim[10], servo2Trim[10], servo3Trim[10], tailServoTrim[10]
-  long  HeadingHoldDelay[10] 
-  ' Add new parms here
-  '  Make sure constants#PB2_EEPROM_PARMS_START is far enough below
-  '  top of 32kb eeprom to hold all of these longs
-  
+  long  rollHiller[10], pitchHiller[10], bell[10]
+  long  tailMaxServoPos[10], tailMinServoPos[10]
+  long  collectiveFeedForward[10]
+  long  gyroFilterFrequency[10]
+                                                    
   long  parmBlockEndpoint   ' Must be the last long in the block of vars to be saved in eeprom
   '---------------------------------------------------------------------------------------------
                
@@ -96,8 +96,26 @@ PUB Stop
 ' Accessors
 '--------------------
 
-PUB getHeadingHoldDelay
-  return HeadingHoldDelay[activeModelIndex]
+PUB getGyroFilterFrequency
+  return gyroFilterFrequency[activeModelIndex]
+  
+PUB getRollHiller
+  return rollHiller[activeModelIndex]
+      
+PUB getPitchHiller
+  return pitchHiller[activeModelIndex]  
+  
+PUB getBell
+  return bell[activeModelIndex]  
+  
+PUB getTailMaxServoPos
+  return tailMaxServoPos[activeModelIndex]  
+  
+PUB getTailMinServoPos
+  return TailMinServoPos[activeModelIndex]  
+  
+PUB getCollectiveFeedForward 
+  return collectiveFeedForward[activeModelIndex]
 
 PUB getCollectiveLimit
   return collectiveLimit[activeModelIndex]
@@ -289,8 +307,8 @@ PUB SetDefaults   | index
   '  the auto-setup features can be used to set servo and gyro
   '  directions for Phubar2 or PhuBar3
   '
-  '                 Honeybee    FireFox  FireFox
-  '                --------------------------------------
+  '                 Honeybee    FireFox  FireFox  Trex 450Pro
+  '                -------------------------------------------
   'pitchangularGain := 63       63        70
   'pitchRateGain    := 21       21        25                  
   'rollAngularGain  := 63       63        63
@@ -313,7 +331,7 @@ PUB SetDefaults   | index
   'headingHoldActive   :=               FALSE
   'swashRing         :=         50        50  
   'collectiveLimit   :=         ???      ???
-  'HeadingHoldDelay  :=         ???      ???
+  '
   '----------------------------------------------------
          
   activeModelIndex   := 0                         'Can have 0-9 models, but default to 0
@@ -340,7 +358,13 @@ PUB SetDefaults   | index
      servo2Trim[index]       := 0
      servo3Trim[index]       := 0
      tailServoTrim[index]    := 0
-     HeadingHoldDelay[index] := 0
+     rollHiller[index]       := 15        ' 1-100% area around center stick where stabilization is active              
+     pitchHiller[index]      := 15        ' 1-100% area around center stick where stabilization is active
+     bell[index]             := 90        ' 1-200               
+     tailMaxServoPos[index]  := 50        ' 60-100% sets max limit point for tail servo throw
+     tailMinServoPos[index]  := 50        ' 0-40% sets min limit point for tail servo throw
+     collectiveFeedForward[index]  := 50  ' Feed-forward gain for collective compensation on yaw
+     gyroFilterFrequency[index] := 2      ' Low-pass filter frequency, 0=256hz, 1=188hz, 2=98hz,3=42hz,4=20hz,5=10hz,6=5hz
      gyroZAxisAssignment[index] := "Y"    ' Z axis is Yaw
      headingHoldDeadband[index] := 1600   ' 2% deadband
      flags[index] := %00000000
@@ -349,28 +373,35 @@ PUB SetDefaults   | index
    ' Put FireFox EP200 settings in model 10
    
   StoreModelName(string("FireFox200"),9)
-  pitchAngularGain[9]    := 65        ' 0 to 100 
-  pitchRateGain[9]       := 21        ' 0 to 100 
-  rollAngularGain[9]     := 63        ' 0 to 100 
-  rollRateGain[9]        := 15        ' 0 to 100   
-  angularDecay[9]        := 100       ' limit 1 to 300 percent 
-  phaseAngle[9]          := -45       ' limit from -90 to +90
-  pulseInterval[9]       := 10        ' servo pulse interval
-  gyroXAxisAssignment[9] := "Y"       ' assign axes based on how the unit is
-  gyroYAxisAssignment[9] := "R"       ' oriented in the aircraft     
-  servo1theta[9]         := -60       ' Negative angles are clockwise from nose=0 when looking
-  servo2theta[9]         := -180      ' down on rotor mast
+  pitchAngularGain[9]    := 65        
+  pitchRateGain[9]       := 21        
+  rollAngularGain[9]     := 63      
+  rollRateGain[9]        := 15         
+  angularDecay[9]        := 100
+  phaseAngle[9]          := -45       
+  pulseInterval[9]       := 10       
+  gyroXAxisAssignment[9] := "Y"       
+  gyroYAxisAssignment[9] := "R"           
+  servo1theta[9]         := -60       
+  servo2theta[9]         := -180      
   servo3theta[9]         := -300
-  yawAngularGain[9]      := 45        ' 0 to 100 
-  yawRateGain[9]         := 45        ' 0 to 100
-  swashRing[9]           := 50        ' 50% range limit on swash servos to prevent binding
-  collectiveLimit[9]     := 50        ' 50% range limit on collective pitch to prevent binding
-  servo1Trim[9]          := 0         ' 0 to +/- 10% trim on servo center
+  yawAngularGain[9]      := 45         
+  yawRateGain[9]         := 45       
+  swashRing[9]           := 50        
+  collectiveLimit[9]     := 50        
+  servo1Trim[9]          := 0        
   servo2Trim[9]          := 0
   servo3Trim[9]          := 0
-  HeadingHoldDelay[9]    := 0         ' 0 to 100, Used in some HH algorithms with lead compensation
-  gyroZAxisAssignment[9] := "P"
-  headingHoldDeadband[9] := 1600
+  tailServoTrim[9]       := 0 
+  rollHiller[9]          := 15                      
+  pitchHiller[9]         := 15         
+  bell[9]                := 90                      
+  tailMaxServoPos[9]     := 50        
+  tailMinServoPos[9]        := 50       
+  collectiveFeedForward[9]  := 50
+  gyroFilterFrequency[9]    := 6         
+  gyroZAxisAssignment[9]    := "P"
+  headingHoldDeadband[9]    := 1600
 
   flags[9] := %00001000   
   
@@ -451,11 +482,16 @@ PRI DumpTuningParameters
     '----------------
     ' For PhuBar3
     if(constants#HARDWARE_VERSION == 3)
+       DumpInteger(string("Bell Gain"),                    getBell)
+       DumpInteger(string("Pitch Hiller"),                 getPitchHiller)
+       DumpInteger(string("Roll Hiller"),                  getRollHiller)
        DumpInteger(string("Yaw Rate Gain"),                getYawRateGain)
+       DumpSwitch (string("Heading Hold On"),              getHeadingHoldActive)
        DumpInteger(string("Heading Hold Gain"),            getYawAngularGain)
        DumpInteger(string("Heading Hold Deadband"),        getHeadingHoldDeadband)
-       DumpInteger(string("Heading Hold Delay"),           getHeadingHoldDelay)
-       DumpSwitch (string("Heading Hold On"),              getHeadingHoldActive) 
+       DumpInteger(string("Collective Feed Forward"),      getCollectiveFeedForward)
+       DumpInteger(string("Gyro Filter Frequency"),        getGyroFilterFrequency)
+ 
 
     '----------------
 
@@ -500,6 +536,9 @@ PRI DumpSetupParameters
     
     if(constants#HARDWARE_VERSION == 3)
        DumpSwitch(string("Reverse Tail Servo "),        getTailServoReverse)
+       DumpInteger(string("Tail Servo Max"),            getTailMaxServoPos)        
+       DumpInteger(string("Tail Servo Min"),            getTailMinServoPos)        
+
        
       
       
@@ -630,12 +669,15 @@ PRI Tune  | response
        '----------------------
        ' For PhuBar3
       if(constants#HARDWARE_VERSION == 3)
-
-          EditInteger(string("Yaw Rate Gain"),     @yawRateGain[activeModelIndex],0,1000            )
-          EditInteger(string("Yaw Angular Gain"),  @yawAngularGain[activeModelIndex],0,300          )
-          EditInteger(string("HH Deadband"),       @headingHoldDeadband[activeModelIndex],0,2000    )
-          EditInteger(string("HH Delay"),          @headingHoldDelay[activeModelIndex],0,100        )
-          setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive ))
+          EditInteger(string("Bell"),                   @bell[activeModelIndex],                        0,150  )
+          EditInteger(string("Pitch Hiller"),           @pitchHiller[activeModelIndex],                 0,100  )
+          EditInteger(string("Roll Hiller"),            @rollHiller[activeModelIndex],                  0,100  )
+          EditInteger(string("Yaw Rate Gain"),          @yawRateGain[activeModelIndex],                 0,1000 )
+          setHeadingHoldActive(EditSwitch (string("HH On"),  getheadingHoldActive                              ))
+          EditInteger(string("HH Gain"),                @yawAngularGain[activeModelIndex],              0,1000 )
+          EditInteger(string("HH Deadband"),            @headingHoldDeadband[activeModelIndex],         0,3000 )
+          EditInteger(string("Collective Feed Forward"),@collectiveFeedForward[activeModelIndex],       0,100  )
+          EditInteger(string("Gyro Filter Frequency"),  @gyroFilterFrequency[activeModelIndex],         0,6    ) 
       '----------------------
       serio.tx($D)
       
@@ -654,9 +696,6 @@ PRI Setup | response
         'serio.tx($D)
 
     serio.str(string(", (s)ervo-auto-setup"))
-        'serio.tx($D)
-
-    serio.str(string(", (h)old servos"))
     serio.tx($D)
 
         
@@ -709,19 +748,15 @@ PRI Setup | response
       if(constants#HARDWARE_VERSION == 3)      
           setTailServoReverse( EditSwitch (string("Reverse Tail Servo"), getTailServoReverse ))
            
-      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-10,10       )
-      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-10,10       )
-      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-10,10       )
+      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-20,20       )
+      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-20,20       )
+      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-20,20       )
 
       if(constants#HARDWARE_VERSION == 3)
-          EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-10,10    )
-     
-    if((response) == "h")               'Go to hold servos functionality
-       HoldServos
-       NEXT
- 
-
-          
+          EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-20,20    )
+          EditInteger(string("Tail Servo Max"),   @tailMaxServoPos[activeModelIndex],60,100   )
+          EditInteger(string("Tail Servo Min"),   @tailMinServoPos[activeModelIndex],0,40   )
+    
       '----------------------
 
       serio.tx($D)
@@ -930,7 +965,6 @@ PRI CopyModel   | fm, tm , tempstr
   yawRateGain[tm]          := yawRateGain[fm] 
   gyroZAxisAssignment[tm]  := gyroZAxisAssignment[fm]
   headingHoldDeadband[tm]  := headingHoldDeadband[fm] 
-  headingHoldDelay[tm]     := headingHoldDelay[fm]
   swashRing[tm]            := swashRing[fm] 
   collectiveLimit[tm]      := collectiveLimit[fm]
   flags[tm]                := flags[fm] 
@@ -1065,7 +1099,7 @@ PRI GyroAutoSetup  | revsense
       itg3200.Stop
       'eeprom.Stop
       gyroFilterCog := itg3200.start(@gyroXrate, @gyroYrate, @gyroZrate, @pitchGyroZero, @rollGyroZero, @yawGyroZero, @gyroTemp, constants#STATUS_LED_PIN)
-
+                                                                                                                                                           
   utilities.pause(3000)
   serio.str(string("Done."))
   serio.tx($D)  
@@ -1244,36 +1278,6 @@ PRI GyroAutoSetup  | revsense
   if(constants#HARDWARE_VERSION == 3)  'Need to stop gyro so it won't clash with eeprom writes
       itg3200.stop
 
-
-PRI HoldServos | sm_cog, s1, s2, s3, s4
-  '----------------------------------------------------------
-  ' Hold all servos centered to allow mechanical adjustments
-  '----------------------------------------------------------
-
-  serio.str(string("To hold servos centered for mechanical adjustment, hit enter..."))
-  serio.tx($D)
-  serio.rx
-
-  sm.Stop
-
-  sm_cog := sm.Start(@s1, @s2, @s3, @s4, GetPulseInterval)
-  if(not sm_cog)
-    utilities.SignalError
-    serio.str(string("Servo manager could not be started, returning to setup menu..."))
-    RETURN
-
-  sm.CenterServos
-
-  serio.str(string("Servos have been centered. To stop and return to main menu, hit enter..."))
-  serio.tx($D)
-  serio.rx
-
-  serio.str(string("Servos no longer being held centered, returning to setup menu..."))
-  serio.tx($D)
-
-  sm.Stop
-
-
 PRI TextStarMenu | response
 
   response := RXOrDisconnect   'Eat second char from TextStar command
@@ -1443,9 +1447,9 @@ PRI TextStarTune | response, tempbit
       response := TextStarEditInteger(string("Yaw HH Deadband"), @headingHoldDeadband[activeModelIndex],0,2000,100)
       if((response == "B") or (response == -1))
         QUIT
-      response := TextStarEditInteger(string("Yaw HH Delay"),    @headingHoldDelay[activeModelIndex],0,100,1)
-      if((response == "B") or (response == -1))
-        QUIT
+
+
+     
       response := TextStarEditSwitch (string("HH Mode On"),      getHeadingHoldActive, @tempbit) '%10000000, %01111111)   'Masks for heading hold flag
       setHeadingHoldActive(tempbit)
       if((response == "B") or (response == -1))
