@@ -215,80 +215,66 @@ PUB PhUBar | i      ' This is the main entry point
       
     waitcnt(T)
 
-PRI UpdateRudderCenter
-
- '---------------------------------------------------------------
- ' If no motion for 2 seconds, reset rudder center
- '  and set yaw to zero.  This keeps the deadband centered on the
- '  rudder center if the pilot lands and shuts the heli down to
- '  adjust rudder trim
- '---------------------------------------------------------------
- 
-    if((||filteredPitchRate < 10) and (||filteredRollRate < 10) and (||filteredYawRate < 10))
-       cyclecount += 1
-    
-    if(cyclecount == constants.GetSAMPLE_RATE_HZ*2)
-       cyclecount := 0
-       rx_rudder_center := rx_rudder_pulsewidth
-       yaw := 0 
-
-  
-PRI  ProcessYaw   | absYaw , yawRate
+PRI  ProcessYaw   | absYaw , yawRate, yawCmdDot, tailMaxServoPos, tailMinServoPos, yawDeadBand, yawCmd, yawCorrectionCheck, collectiveFeedFwd
  '---------------------------------------------------------------
  ' Here we do all the processing of yaw information for
  '   controlling the rudder output to the tail rotor,
  '   either rate-based or heading-hold depending on
  '   whether heading-hold is turned on.
+ '
+ ' Written by Ryan Beall
  '---------------------------------------------------------------
 
- if(parms.getHeadingHoldActive)
-      UpdateRudderCenter
- 
- '--------------------------------------------------------------- 
- ' Integrate Yaw angle from Yaw rate
- '---------------------------------------------------------------  
- yawRate := filteredYawRate - yawFilterBias
-  absYaw := ||yaw
-  
- if((||yawRate  > constants.GetNOISE) and (absYaw < constants#YAW_LIMIT))  'Limit travel 
-      yaw +=  yawRate
+  tailMaxServoPos := 135000
+  tailMinServoPos := 98000
 
-  '--------------------------------------------------------------- 
-  ' When inside rudder command deadband, we use integrated yaw value for proportional term
-  '  to give a heading-hold quality, depending on yaw HH gain.
-  ' When outside of deadband, keep yaw at zero to effectively go to to rate-only mode until we
-  '  reenter the deadband and go back to using true yaw for HH
-  '--------------------------------------------------------------- 
-  
- if(||(rx_rudder_pulsewidth  - rx_rudder_center) > parms.GetHeadingHoldDeadband)
-         yaw := 0
+  yawCmd := 0
+  if (rx_rudder_pulsewidth  - rx_rudder_center) > parms.getHeadingHoldDeadband
+    yawCmd := rx_rudder_pulsewidth  - rx_rudder_center
+  if (rx_rudder_pulsewidth  - rx_rudder_center) < -parms.getHeadingHoldDeadband
+    yawCmd := rx_rudder_pulsewidth  - rx_rudder_center
 
-  '--------------------------------------------------------------- 
-  ' Compute yaw correction using rate term and angle term
-  '  Only add integrated yaw term if HH switch is On 
-  '---------------------------------------------------------------          
- yawCorrection  := yawSign * ((parms.getYawRateGain * (filteredYawRate - yawFilterBias ))/ratePrescale )
- 
- if(parms.getHeadingHoldActive)
-     yawCorrection += yawSign * ((parms.getYawAngularGain * yaw)/angularPrescale)
+  '--------------------------------------
 
-  '--------------------------------------------------------------- 
-  ' Add commanded input from rx if that channel is receiving a signal
-  '---------------------------------------------------------------  
-  
- yawCorrection  +=  (rx_rudder_pulsewidth  - rx_rudder_center)
+  yawRate := filteredYawRate - yawFilterBias
 
-  '--------------------------------------------------------------- 
-  ' Keep within servo endpoint limits
-  '---------------------------------------------------------------  
- yawCorrection  := (yawCorrection  <# maxYawCorrection) #> minYawCorrection
+  yawCmdDot := (yawSign * yawRate/ratePrescale) + (yawCmd*60/1000)
 
-  '--------------------------------------------------------------- 
-  ' Add to trimmed center and allow for reversal
-  '---------------------------------------------------------------
-  tailServoPos := tailServoCenter + (yawCorrection * tailServoSign)
+  yawCorrection  := ((yawSign * yawRate/ratePrescale) * parms.getYawRateGain/10)  + (yawCmd*75/100)
 
 
+  if(parms.getHeadingHoldActive)
+
+    yawCorrectionCheck := rx_rudder_center + (yawCorrection + (yaw * parms.getYawAngularGain/100) * tailServoSign)
+
+
+    if (yawCorrectionCheck > tailMaxServoPos) and  (yawCmdDot < 0)
+      yaw += yawCmdDot
+
+    if (yawCorrectionCheck < tailMinServoPos) and  (yawCmdDot > 0)
+      yaw += yawCmdDot
+
+    if (yawCorrectionCheck < tailMaxServoPos) and  (yawCorrectionCheck > tailMinServoPos)
+      yaw += yawCmdDot
+
+
+    yawCorrection += yaw * parms.getYawAngularGain/100
+
+    'Torque (Colletive) Compensation
+    '------------------------------------
+    '3D mode
+    'assumes 50% stick is 0deg collective this will only work for 3D setups
+
+    yawCorrection -= ||collectiveCorrection * parms.getCollectiveFeedForward / 100
+
+    'normal mode
+    'assumes the least ammount of torque is at bottom collective stick
+
+    'yawCorrection += collectiveCorrection * parms.getCollectiveFeedForward / 100
+
+
+  tailServoPos := rx_rudder_center + (yawCorrection * tailServoSign)
+  tailServoPos  := (tailServoPos  <# tailMaxServoPos) #> tailMinServoPos
   
 PRI  IntegrateWithAngularDecay | rollRate, pitchRate, absRoll, absPitch 
    '-------------------------------------------------------------
