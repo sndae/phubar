@@ -24,7 +24,7 @@ CON
 VAR
   long servocog
                                                                                                                               
-PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseInterval, PWMActiveAddr)  :okay
+PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseInterval, PWMActiveAddr)  :okay | numServos
                                                                                      
   p1:=pos1address     'Stores the address of the "position1" variable in the main Hub RAM as "p1"
   p2:=pos2address     'Stores the address of the "position2" variable in the main Hub RAM as "p2"
@@ -41,11 +41,32 @@ PUB Start(pos1address, pos2address, pos3address, pos4address,pos5address, pulseI
   PWMActive := LONG[PWMActiveAddr]         'Indicator of whether PMW receiver is being used, rather than
                                            ' a satellite receiver.  Needed because rudder input is reused
                                            ' for throttle output when satellite receiver is in use
-    
-  LowTime := pulseInterval * 80_000        ' Overrides defaults in DAT section
 
+  '----------------------------------------------------------------------------
+  ' If using regular receiver, PWMActive is true and the PASM code will skip
+  ' the fifth throttle "servo" output, so the total period to set all four
+  ' outputs is zonetime * 4.
+  '
+  ' If using satellite receiver, total period is zonetime * 5
+  '
+  ' Lowtime needs to fill out the period so it will equal the
+  '  pulseinterval parameter of 10 - 20ms
+  '
+  ' Minimum allowable LowTime is zero.
+  ' Minimum period is about 10ms when satellite used
+  ' Minimum period is about 8ms when regular rx used
+  '-----------------------------------------------------------------------------
+  if(PWMActive == TRUE)
+       numServos := 4
+  else
+       numServos := 5
 
-  zoneTime := 240_000                       'ticks equl to 3ms                                       
+  zoneTime := 161_000                                              'ticks equl to slightly more than 2ms  
+  LowTime := pulseInterval * 80_000 - (numServos * zoneTime)       'diff between desired period and sum of pulses
+        
+  if(LowTime < 0)
+      LowTime := 0
+                             
   Stop
   CenterServos                             'Servos need to start at center to begin working right
   okay:= servocog:=cognew(@FourServos,0)   'Start a new cog and run the assembly code starting at the "FourServos" cell
