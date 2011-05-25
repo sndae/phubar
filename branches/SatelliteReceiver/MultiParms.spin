@@ -15,6 +15,11 @@ CON
   MAX_MODELS           = 10     'Number of models that can be stored in eeprom
   MAX_SWASH_RING       = 100    'Max percent of swash servo throw allowed
   MIN_SWASH_RING       = 25     'Min swash servo throw allowed
+  MAX_SERVO_TRIM       = 20
+
+  CENTER_OFFSET_TYPE = 1        'Servo center trims represented as +- offset from zero center
+  PERCENTAGE_TYPE    = 2        'Tail min/max servo position represented as a percentage 0 to 100
+  
   
   FLAGS_REVERSE_PITCH_GYRO_BIT  = 0   'Bits in flags var that hold switch values
   FLAGS_REVERSE_ROLL_GYRO_BIT   = 1
@@ -33,7 +38,9 @@ OBJ
  gyrofilter     :  "GyroFilter"          '2-axis IDG-500 gyro with software low-pass filter
  itg3200        :  "ITG-3200"            '3-axis Invensense Gyro read using i2c, built-in low-pass filter
  sm             :  "ServoManager"
+ rxman          :  "RC_Receiver"
  eeprom         :  "Propeller Eeprom"
+ math           :  "Math"                'Math utilities
  
 VAR
     ' Variables not stored in eeprom
@@ -46,7 +53,13 @@ VAR
   long  gyroYvalue, gyroXvalue, gyroYrate, gyroXrate
   long  gyroZvalue, gyroZrate 
   long  yawGyroZero, yawFilterBias
-
+  long  s1,s2,s3,s4,s5  'servo values for setup/trim
+  long  pitchCorrection, rollCorrection, collectiveCorrection, elevCenter, aileCenter, collectiveCenter
+  long  servo1sign, servo2sign, servo3sign, elevbump, ailebump, collectivebump
+  long  phasedS1Correction,phasedS2Correction,phasedS3Correction
+  long  cosTerm1A, cosTerm1B, cosTerm2A, cosTerm2B, cosTerm3A, cosTerm3B
+  long servo1Center,servo2Center,servo3Center
+  
   '-------------------------------------------------------------------------------------------  
   ' Variables that are saved in upper 32kb of the eeprom
   '  Don't remove any or change the order because it will mess with
@@ -55,7 +68,7 @@ VAR
   long  activeModelIndex, modelName[10*4]
   long  pitchangularGain[10], pitchrateGain[10]
   long  rollAngularGain[10], rollRateGain[10]
-  long  flybarSpeed[10], phaseAngle[10], pulseInterval[10] 
+  long  flybarWeight[10], phaseAngle[10], pulseInterval[10] 
   long  flags[10]                                            'flags holds 32 switches for reversals, etc
   long  servo1theta[10], servo2theta[10], servo3theta[10]   
   long  yawAngularGain[10], yawRateGain[10] 
@@ -135,8 +148,8 @@ PUB getRollAngularGain
 PUB getRollRateGain
   return rollRateGain[activeModelIndex]
   
-PUB getflybarSpeed
-  return flybarSpeed[activeModelIndex]
+PUB getflybarWeight
+  return flybarWeight[activeModelIndex]
 
 PUB getRxAuxActive
   return rxAuxActive
@@ -313,7 +326,7 @@ PUB SetDefaults   | index
   'pitchRateGain    := 21       21        25                  
   'rollAngularGain  := 63       63        63
   'rollRateGain     := 21       21        21                  
-  'flybarSpeed      := 960      960       960
+  'flybarWeight      := 960      960       960
   'phaseAngle       := 0        0        -45
   'pulseInterval    := 10       10       10
   'reversePitchGyro := FALSE    FALSE   FALSE
@@ -342,7 +355,7 @@ PUB SetDefaults   | index
      pitchRateGain[index]    := 20        ' 0 to 100 
      rollAngularGain[index]  := 60        ' 0 to 100 
      rollRateGain[index]     := 20        ' 0 to 100   
-     flybarSpeed[index]     := 960        ' limit 1 to 300 percent 
+     flybarWeight[index]     := 960        ' limit 1 to 300 percent 
      phaseAngle[index]       := 0         ' limit from -90 to +90
      pulseInterval[index]    := 20        ' servo pulse interval
      gyroXAxisAssignment[index] := "R"    ' assign axes based on how the unit is
@@ -358,8 +371,8 @@ PUB SetDefaults   | index
      servo2Trim[index]       := 0
      servo3Trim[index]       := 0
      tailServoTrim[index]    := 0
-     rollHiller[index]       := 15        ' 1-100% area around center stick where stabilization is active              
-     pitchHiller[index]      := 15        ' 1-100% area around center stick where stabilization is active
+     rollHiller[index]       := 15        ' Virtual flybar tilt limit             
+     pitchHiller[index]      := 15        ' Virtual flybar tilt limit
      bell[index]             := 90        ' 1-200               
      tailMaxServoPos[index]  := 50        ' 60-100% sets max limit point for tail servo throw
      tailMinServoPos[index]  := 50        ' 0-40% sets min limit point for tail servo throw
@@ -377,7 +390,7 @@ PUB SetDefaults   | index
   pitchRateGain[9]       := 21        
   rollAngularGain[9]     := 63      
   rollRateGain[9]        := 15         
-  flybarSpeed[9]        := 960     
+  flybarWeight[9]        := 960     
   phaseAngle[9]          := -45       
   pulseInterval[9]       := 10       
   gyroXAxisAssignment[9] := "Y"       
@@ -475,7 +488,7 @@ PRI DumpTuningParameters
     DumpInteger(string("Pitch Angular Gain"),  getPitchAngularGain)
     DumpInteger(string("Roll Rate Gain"),      getRollRateGain)
     DumpInteger(string("Roll Angular Gain"),   getRollAngularGain)
-    DumpInteger(string("Flybar Speed"),        getflybarSpeed)
+    DumpInteger(string("Flybar Speed"),        getflybarWeight)
     DumpInteger(string("Phase Angle"),         getPhaseAngle)
     DumpInteger(string("Swash Ring"),          getSwashRing)
     DumpInteger(string("Collective Limit"),    getCollectiveLimit)
@@ -540,13 +553,6 @@ PRI DumpSetupParameters
        DumpInteger(string("Tail Servo Min"),            getTailMinServoPos)        
 
        
-      
-      
-
-    '----------------
-    
-
-               
 PRI EditParameters | response, now
   '---------------------------------------------------------------------------------
   ' Use Robert Quattlebaum's Settings object to store/retrieve parameters in eeprom
@@ -661,7 +667,7 @@ PRI Tune  | response
        EditInteger(string("Pitch Angular Gain"),   @pitchAngularGain[activeModelIndex],     0,100    )
        EditInteger(string("Roll Rate Gain"),       @rollRateGain[activeModelIndex],         0,100    )
        EditInteger(string("Roll Angular Gain"),    @rollAngularGain[activeModelIndex],      0,100    )
-       EditInteger(string("Flybar Speed"),         @flybarSpeed[activeModelIndex],          0,100    )
+       EditInteger(string("Flybar Weight"),        @flybarWeight[activeModelIndex],         0,100    )
        EditInteger(string("Phase Angle"),          @phaseAngle[activeModelIndex],           -90,90   )         
        EditInteger(string("Swash Ring"),           @swashRing[activeModelIndex],            25,100   )         
        EditInteger(string("Collective Limit"),     @collectiveLimit[activeModelIndex],      25,100   )
@@ -692,13 +698,9 @@ PRI Setup | response
     serio.str(string("(l)ist, (c)hange, (m)ain menu "))
     
     'if(constants#HARDWARE_VERSION == 3)
-      serio.str(string(", (g)yro-auto-setup"))
-        'serio.tx($D)
-
-    serio.str(string(", (s)ervo-auto-setup"))
+      serio.str(string(", (g)yro-auto-setup, (s)ervo-auto-setup, (a)djust servos"))
     serio.tx($D)
-
-        
+       
     response := RXorDisconnect
 
     if(response == -1) 'No char came in, user must have disconnected, so we are done
@@ -710,6 +712,10 @@ PRI Setup | response
        QUIT
        
     'if(constants#HARDWARE_VERSION == 3)
+    if((response) == "a")              
+        AdjustServos
+        NEXT
+        
     if((response) == "g")               'Go to auto-setup wizard
          GyroAutoSetup
          NEXT
@@ -724,7 +730,7 @@ PRI Setup | response
       
     if((response) == "c")
       EditString (string("Model Name"),           @modelName[activeModelIndex*4]             )
-      EditInteger(string("Servo Pulse Interval"), @pulseInterval[activeModelIndex],5,20      )
+      EditInteger(string("Servo Pulse Interval"), @pulseInterval[activeModelIndex],10,20      )
       EditAxis   (string("Gyro X Axis"),          @gyroXAxisAssignment[activeModelIndex]     )
       EditAxis   (string("Gyro Y Axis"),          @gyroYAxisAssignment[activeModelIndex]     )
 
@@ -748,9 +754,9 @@ PRI Setup | response
       if(constants#HARDWARE_VERSION == 3)      
           setTailServoReverse( EditSwitch (string("Reverse Tail Servo"), getTailServoReverse ))
            
-      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-20,20       )
-      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-20,20       )
-      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-20,20       )
+      EditInteger(string("Servo 1 Trim"),         @servo1Trim[activeModelIndex],-MAX_SERVO_TRIM,MAX_SERVO_TRIM  )
+      EditInteger(string("Servo 2 Trim"),         @servo2Trim[activeModelIndex],-MAX_SERVO_TRIM,MAX_SERVO_TRIM  )
+      EditInteger(string("Servo 3 Trim"),         @servo3Trim[activeModelIndex],-MAX_SERVO_TRIM,MAX_SERVO_TRIM  )
 
       if(constants#HARDWARE_VERSION == 3)
           EditInteger(string("Tail Servo Trim"),  @tailServoTrim[activeModelIndex],-20,20    )
@@ -762,7 +768,70 @@ PRI Setup | response
       serio.tx($D)
   return
 
+PUB AdjustServos | response
+ 
+  repeat
+    serio.tx($D)
+    serio.str(string("Adjust Servos Menu:"))
+    serio.tx($D)   
+    serio.str(string("(s)wash trim, (1)Servo1, (2)Servo2, (3)Servo3, (4)Tail, "))
+     serio.tx($D) 
+    serio.str(string("(T)ail Max, (t)ail min, (b)ack, (e)xit+save"))
+    serio.tx($D)
+        
+    response := RXorDisconnect
 
+    if(response == -1) 'No char came in, user must have disconnected, so we are done
+       QUIT
+    
+    if((response) == "s")
+       SwashTrimUsingStick
+       NEXT
+       
+    if((response) == "1")
+       serio.tx($D)
+       ServoTrimUsingStick(1, @servo1Trim[activeModelIndex], getServo1Reverse, string("Servo1 center trim"),  CENTER_OFFSET_TYPE)      
+       NEXT
+       
+    if((response) == "2")
+       serio.tx($D)
+       ServoTrimUsingStick(2, @servo2Trim[activeModelIndex], getServo2Reverse, string("Servo2 center trim"),  CENTER_OFFSET_TYPE)      
+       NEXT
+       
+    if((response) == "3")
+       serio.tx($D)
+       ServoTrimUsingStick(3, @servo3Trim[activeModelIndex], getServo3Reverse, string("Servo3 center trim"),  CENTER_OFFSET_TYPE)      
+       NEXT
+
+    if((response) == "4")
+       serio.tx($D)
+       ServoTrimUsingStick(4, @tailServoTrim[activeModelIndex], getTailServoReverse, string("Tail center trim"),  CENTER_OFFSET_TYPE)      
+       NEXT
+       
+    if((response) == "T")
+       serio.tx($D)
+       ServoTrimUsingStick(4, @tailMaxServoPos[activeModelIndex], getTailServoReverse, string("Tail Max position"), PERCENTAGE_TYPE)      
+       NEXT
+         
+    if((response) == "t")
+       serio.tx($D)
+       ServoTrimUsingStick(4, @tailMinServoPos[activeModelIndex], getTailServoReverse, string("Tail Min position"), PERCENTAGE_TYPE)      
+       NEXT
+       
+    if((response) == "b")
+       serio.tx($D)
+       serio.str(string("Back to setup menu... "))
+       QUIT
+
+    if((response) == "e")
+      serio.str(string("Saving parameters to eeprom..."))      
+       if(SaveParmsToEeprom == -1)
+          serio.str(string("Commit Aborted"))   
+       else
+          serio.str(string("Done. Back to setup menu..."))
+       serio.tx($D)
+       QUIT       
+       
 PRI DumpInteger(label, parm)
   serio.str(label)
   serio.str(string(": ["))
@@ -949,7 +1018,7 @@ PRI CopyModel   | fm, tm , tempstr
   pitchRateGain[tm]        := pitchRateGain[fm]
   rollAngularGain[tm]      := rollAngularGain[fm]
   rollRateGain[tm]         := rollRateGain[fm] 
-  flybarSpeed[tm]         := flybarSpeed[fm]
+  flybarWeight[tm]          := flybarWeight[fm]
   phaseAngle[tm]           := phaseAngle[fm] 
   pulseInterval[tm]        := pulseInterval[fm]
   gyroXAxisAssignment[tm]  := gyroXAxisAssignment[fm]
@@ -1011,7 +1080,237 @@ PRI SelectModel  | response, index, tempstr[3]
     lastModelIndex := activeModelIndex
     activeModelIndex := response -1  'Convert ascii char to equiv numeral 0 thru 9
 
-PRI ServoAutoSetup | response, sm_cog, s1, s2, s3, s4 ,s5 , PWMActive
+
+PUB StartReceiverAndServos | PWMActive,rxman_cog,sm_cog
+
+   '-----------------------------------------------
+   ' Start receiver manager first (sets PWMActive)
+   '----------------------------------------------- 
+  rxman.stop  
+  rxman_cog := rxman.start(@PWMActive)  
+  if(not rxman_cog)
+     serio.str(string("Error starting receiver manager"))
+     serio.tx($D)
+     sm.Stop
+     RETURN -1
+
+   '-----------------------------------------------
+   ' Start servo manager next   (uses PWMActive)
+   '-----------------------------------------------        
+  sm.Stop
+  sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval, @PWMActive)  
+  if(not sm_cog)
+     serio.str(string("Error starting servo manager"))
+     serio.tx($D)
+     RETURN -1
+
+  RETURN 0
+
+PUB StopReceiverAndServos
+    sm.Stop
+    rxman.Stop
+              
+PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servosign,offsetPercentage,stickCenter,position,bump,sum,PWMActive,ServoPosAddr
+
+  if(StartReceiverAndServos == -1)
+      serio.str(string("Returning to menu."))
+      serio.tx($D)
+      RETURN
+
+  utilities.Pause(1000)
+      
+  case servoNum
+        1 : ServoPosAddr := @s1
+        2 : ServoPosAddr := @s2
+        3 : ServoPosAddr := @s3
+        4 : ServoPosAddr := @s4
+        
+  serio.str(string("Adjusting "))
+  serio.str(descStr)
+  serio.tx($D)    
+  serio.str(string("Use tx elev stick to adjust, hit key when done"))
+  serio.tx($D)
+  serio.tx($D)
+
+  stickCenter := rxman.getElevator
+  sum := 0
+  servosign := 1
+  
+  if(reverse)
+     servosign := -1
+
+   '--------------------------------------------------------
+   ' Get position from current trim value and reversal sign
+   '---------------------------------------------------------
+       
+  if(type == CENTER_OFFSET_TYPE)
+      position := sm#SERVO_CENTER + ((LONG[servoTrimAddr] * sm#ONE_PERCENT_SERVO_THROW) * servosign)
+      
+  if(type == PERCENTAGE_TYPE)
+      position := sm#SERVO_MIN    + ((LONG[servoTrimAddr] * sm#ONE_PERCENT_SERVO_THROW) * servosign)     
+
+   '------------------------------------------------------------------
+   ' Loop, adding stick input to trim value,
+   '  Move servo to new position,
+   '  Display trim value or position percentage
+   '  Detect key hit to exit
+   '------------------------------------------------------------------    
+  repeat       
+     LONG[ServoPosAddr] := position             'Set servo to trim value
+     bump :=  (rxman.getElevator - stickCenter) 'Get stick deflection
+      
+     if(||bump > 100)
+          sum += bump/8                                 'Add bump to position
+          if(sum > sm#ONE_PERCENT_SERVO_THROW)
+              position +=  sm#ONE_PERCENT_SERVO_THROW   'Change by quantum of 1%
+              sum := 0
+          if(sum < -(sm#ONE_PERCENT_SERVO_THROW))
+              position +=  -sm#ONE_PERCENT_SERVO_THROW
+              sum := 0
+          position := (position <# sm#SERVO_MAX) #> sm#SERVO_MIN   'Keep in bounds                     
+          serio.tx(14)
+          serio.tx(0)       'CR, no LF
+          serio.tx(11)
+          serio.str(descStr)
+          serio.str(string(" = "))
+          serio.dec(offsetPercentage)
+
+     if(type == CENTER_OFFSET_TYPE)         
+        offsetPercentage  := servosign * (position - sm#SERVO_CENTER) / sm#ONE_PERCENT_SERVO_THROW
+             
+     if(type == PERCENTAGE_TYPE)
+        offsetPercentage  := (position - sm#SERVO_MIN) / sm#ONE_PERCENT_SERVO_THROW
+           
+     if(serio.rxcheck <> -1)                        'A key hit will exit
+          serio.tx($D)                                       
+          serio.str(string("Exiting servo adjust."))
+          serio.tx($D)
+          LONG[servoTrimAddr] := offsetPercentage   'Save new trim
+          StopReceiverAndServos
+          QUIT
+     utilities.Pause(100)
+     
+
+PUB SwashTrimUsingStick   | tempTrim1, tempTrim2, tempTrim3
+
+  if(StartReceiverAndServos == -1)
+      serio.str(string("Returning to menu."))
+      serio.tx($D)
+      RETURN
+
+  utilities.Pause(200)
+
+  serio.tx($D)  
+  serio.str(string("Adjusting swashplate level,"))
+  serio.tx($D)    
+  serio.str(string("Use tx cyclic stick to level swashplate, hit key when done"))
+  serio.tx($D)
+  serio.tx($D)
+  serio.str(string("s1  s2  s3"))
+  serio.tx($D)
+  serio.str(string("-----------"))
+  serio.tx($D)
+
+  elevCenter := rxman.getElevator
+  aileCenter := rxman.getAileron
+  collectiveCenter := rxman.getAux
+   
+  pitchCorrection := 0
+  rollCorrection  := 0
+  collectiveCorrection := 0
+  
+  servo1sign := servo2sign := servo3sign :=1
+  
+  if(getServo1Reverse)
+     servo1sign := -1
+  if(getServo2Reverse)
+     servo2sign := -1
+  if(getServo3Reverse)
+     servo3sign := -1
+
+  ' Precompute some terms used in mixing equations
+     
+  cosTerm1A := Math.Cosine(getPhaseAngle - getServo1theta)
+  cosTerm1B := Math.Cosine(getPhaseAngle - getServo1theta +90)
+  cosTerm2A := Math.Cosine(getPhaseAngle - getServo2theta)
+  cosTerm2B := Math.Cosine(getPhaseAngle - getServo2theta +90)
+  cosTerm3A := Math.Cosine(getPhaseAngle - getServo3theta)
+  cosTerm3B := Math.Cosine(getPhaseAngle - getServo3theta +90)
+          
+   '------------------------------------------------------------------
+   ' Loop, allowing user to level the swash using tx cyclic stick
+   '
+   ' NOTE:  Transmitter cyclic trims should be zeroed either before
+   '         or just after you use this feature.  If they are not, when
+   '         the PhuBar goes into flight mode, it will add the tx
+   '         trims to the swash position and it won't be level. If
+   '         in flight the heli still not trimmed, you can then use
+   '         the tx trims for fine-tuning. 
+   '------------------------------------------------------------------
+  repeat
+       ' Get stick input
+       
+     elevbump :=  (rxman.getElevator - elevCenter) 
+     ailebump :=  (rxman.getAileron  - aileCenter)
+     collectivebump := (rxman.getAux  - collectiveCenter) 
+
+       'Accumulate bumps
+       
+     if(||elevbump > 200)                       
+          pitchCorrection +=  elevbump/20
+          pitchCorrection := (pitchCorrection <# 20000) #> -20000 
+              
+     if(||ailebump > 200)
+          rollCorrection  +=  ailebump/20
+          rollCorrection  := (rollCorrection  <# 20000) #> -20000
+
+     if(||collectivebump > 200)
+          collectiveCorrection  +=  collectivebump/20
+          collectiveCorrection  := (collectiveCorrection  <# 20000) #> -20000
+           
+
+     ' Mix pitch/roll into 3 servo positions
+     
+     phasedS1Correction := ((((pitchCorrection ~> 1) * cosTerm1A) +  ((rollCorrection ~> 1) * cosTerm1B)) ~> 15) + collectiveCorrection 
+     phasedS2Correction := ((((pitchCorrection ~> 1) * cosTerm2A) +  ((rollCorrection ~> 1) * cosTerm2B)) ~> 15) + collectiveCorrection
+     phasedS3Correction := ((((pitchCorrection ~> 1) * cosTerm3A) +  ((rollCorrection ~> 1) * cosTerm3B)) ~> 15) + collectiveCorrection
+
+      'Compute new trim values
+
+     tempTrim1 := getServo1Trim + phasedS1Correction/sm#ONE_PERCENT_SERVO_THROW
+     tempTrim2 := getServo2Trim + phasedS2Correction/sm#ONE_PERCENT_SERVO_THROW
+     tempTrim3 := getServo3Trim + phasedS3Correction/sm#ONE_PERCENT_SERVO_THROW
+      
+      serio.tx(14)
+      serio.tx(0)               'CR, no LF
+      serio.tx(11)
+      serio.dec(tempTrim1)      'Display new trim values
+      serio.str(string("  "))
+      serio.dec(tempTrim2)
+      serio.str(string("  "))
+      serio.dec(tempTrim3)
+      
+      'Move servos to new centers using new trim values
+          
+     s1 := sm#SERVO_CENTER + ((tempTrim1 * sm#ONE_PERCENT_SERVO_THROW) * servo1sign)  
+     s2 := sm#SERVO_CENTER + ((tempTrim2 * sm#ONE_PERCENT_SERVO_THROW) * servo2sign)
+     s3 := sm#SERVO_CENTER + ((tempTrim3 * sm#ONE_PERCENT_SERVO_THROW) * servo3sign)
+     
+       'If a key is hit, save new trims and exit
+       
+     if(serio.rxcheck <> -1)                     
+          serio.tx($D)                                       
+          serio.str(string("Exiting swash adjust."))
+          serio.tx($D)
+          servo1Trim[activeModelIndex] := tempTrim1 
+          servo2Trim[activeModelIndex] := tempTrim2
+          servo3Trim[activeModelIndex] := tempTrim3
+          StopReceiverAndServos 
+          QUIT
+    utilities.Pause(100) 
+                 
+   
+PRI ServoAutoSetup | response, sm_cog, PWMActive 
 
   sm.Stop
   sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval, @PWMActive)  
@@ -1419,7 +1718,7 @@ PRI TextStarTune | response, tempbit
       response := TextStarEditInteger(string("Roll Angle Gain"),   @rollAngularGain[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
          QUIT
-      response := TextStarEditInteger(string("Flybar Speed"),      @flybarSpeed[activeModelIndex],0,100,1)
+      response := TextStarEditInteger(string("Flybar Weight"),     @flybarWeight[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
          QUIT
       response := TextStarEditInteger(string("Phase Angle"),       @phaseAngle[activeModelIndex],-90,90,1)         
@@ -1437,7 +1736,21 @@ PRI TextStarTune | response, tempbit
 
       if(constants#HARDWARE_VERSION == 2)
         NEXT
-        
+      response := TextStarEditInteger(string("Bell Gain"),      @bell[activeModelIndex],0,150,1)
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditInteger(string("Pitch Hiller"),   @pitchHiller[activeModelIndex],0,100,1)
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditInteger(string("Roll Hiller"),    @rollHiller[activeModelIndex],0,100,1)
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditInteger(string("Col Feed Fwd"),     @collectiveFeedForward[activeModelIndex],0,100,1)
+      if((response == "B") or (response == -1))
+        QUIT
+      response := TextStarEditInteger(string("Gyro Filter Freq"),  @gyroFilterFrequency[activeModelIndex],0,100,1)
+      if((response == "B") or (response == -1))
+        QUIT     
       response := TextStarEditInteger(string("Yaw Rate Gain"),   @yawRateGain[activeModelIndex],0,100,1)
       if((response == "B") or (response == -1))
         QUIT
@@ -1447,17 +1760,12 @@ PRI TextStarTune | response, tempbit
       response := TextStarEditInteger(string("Yaw HH Deadband"), @headingHoldDeadband[activeModelIndex],0,2000,100)
       if((response == "B") or (response == -1))
         QUIT
-
-
-     
+             
       response := TextStarEditSwitch (string("HH Mode On"),      getHeadingHoldActive, @tempbit) '%10000000, %01111111)   'Masks for heading hold flag
       setHeadingHoldActive(tempbit)
       if((response == "B") or (response == -1))
         QUIT
       
-
-             
-    'return response
 
 PRI TextStarSetup | response, tempbit
 
@@ -1501,7 +1809,13 @@ PRI TextStarSetup | response, tempbit
       setServo3Reverse(tempbit)
       if((response == "B") or (response == -1))
          QUIT      
-    
+      response := TextStarEditInteger(string("Tail Svo Max Pos"),    @tailMaxServoPos[activeModelIndex],60,100,1  )
+      if((response == "B") or (response == -1))
+         QUIT
+      response := TextStarEditInteger(string("Tail Svo Min Pos"),    @tailMinServoPos[activeModelIndex],0,40,1  )
+      if((response == "B") or (response == -1))
+         QUIT
+     
          
            
       if(constants#HARDWARE_VERSION == 2)
