@@ -1,3 +1,7 @@
+May 27, 2011
+
+After much flight testing and tweaking by Ryan, his new cyclic and HH equations are looking solid.  I added code to allow for adjusting servo trim using the transmitter, either individually or mixed for swash leveling.  Ryan added collective trim using the tx throttle.
+
 May 15, 2011
 
 Currently working with Ryan to parameterize his control equations so the user will be able to tune the flight behavior.
