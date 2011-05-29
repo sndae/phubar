@@ -53,12 +53,12 @@ VAR
   long  gyroYvalue, gyroXvalue, gyroYrate, gyroXrate
   long  gyroZvalue, gyroZrate 
   long  yawGyroZero, yawFilterBias
-  long  s1,s2,s3,s4,s5  'servo values for setup/trim
+  long  s1,s2,s3,s4,s5, PWMActive  'servo values for setup/trim
   long  pitchCorrection, rollCorrection, collectiveCorrection, elevCenter, aileCenter, collectiveCenter
   long  servo1sign, servo2sign, servo3sign, elevbump, ailebump, collectivebump
   long  phasedS1Correction,phasedS2Correction,phasedS3Correction
   long  cosTerm1A, cosTerm1B, cosTerm2A, cosTerm2B, cosTerm3A, cosTerm3B
-  long servo1Center,servo2Center,servo3Center
+  long  servo1Center,servo2Center,servo3Center
   
   '-------------------------------------------------------------------------------------------  
   ' Variables that are saved in upper 32kb of the eeprom
@@ -1081,7 +1081,7 @@ PRI SelectModel  | response, index, tempstr[3]
     activeModelIndex := response -1  'Convert ascii char to equiv numeral 0 thru 9
 
 
-PUB StartReceiverAndServos | PWMActive,rxman_cog,sm_cog
+PUB StartReceiverAndServos | rxman_cog,sm_cog
 
    '-----------------------------------------------
    ' Start receiver manager first (sets PWMActive)
@@ -1091,7 +1091,6 @@ PUB StartReceiverAndServos | PWMActive,rxman_cog,sm_cog
   if(not rxman_cog)
      serio.str(string("Error starting receiver manager"))
      serio.tx($D)
-     sm.Stop
      RETURN -1
 
    '-----------------------------------------------
@@ -1102,6 +1101,7 @@ PUB StartReceiverAndServos | PWMActive,rxman_cog,sm_cog
   if(not sm_cog)
      serio.str(string("Error starting servo manager"))
      serio.tx($D)
+     rxman.stop
      RETURN -1
 
   RETURN 0
@@ -1109,8 +1109,16 @@ PUB StartReceiverAndServos | PWMActive,rxman_cog,sm_cog
 PUB StopReceiverAndServos
     sm.Stop
     rxman.Stop
-              
-PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servosign,offsetPercentage,stickCenter,position,bump,sum,PWMActive,ServoPosAddr
+    utilities.Pause(100)
+                   
+PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servosign,offsetPercentage,stickCenter,position,bump,sum,ServoPosAddr
+       
+  serio.str(string("Adjusting "))
+  serio.str(descStr)
+  serio.tx($D)    
+  serio.str(string("Use tx elev stick to adjust, hit key when done"))
+  serio.tx($D)
+  serio.tx($D)
 
   if(StartReceiverAndServos == -1)
       serio.str(string("Returning to menu."))
@@ -1124,13 +1132,6 @@ PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servos
         2 : ServoPosAddr := @s2
         3 : ServoPosAddr := @s3
         4 : ServoPosAddr := @s4
-        
-  serio.str(string("Adjusting "))
-  serio.str(descStr)
-  serio.tx($D)    
-  serio.str(string("Use tx elev stick to adjust, hit key when done"))
-  serio.tx($D)
-  serio.tx($D)
 
   stickCenter := rxman.getElevator
   sum := 0
@@ -1168,12 +1169,14 @@ PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servos
               position +=  -sm#ONE_PERCENT_SERVO_THROW
               sum := 0
           position := (position <# sm#SERVO_MAX) #> sm#SERVO_MIN   'Keep in bounds                     
-          serio.tx(14)
-          serio.tx(0)       'CR, no LF
-          serio.tx(11)
-          serio.str(descStr)
-          serio.str(string(" = "))
-          serio.dec(offsetPercentage)
+
+        if(PWMActive)        'If using non-satellite receiver, serial I/O won't interfere with rx input
+           serio.tx(14)      '  so we can display the trim values as they are being changed
+           serio.tx(0)       'Go to beginning of same line and clear line to overwrite previous values
+           serio.tx(11)
+           serio.str(descStr)
+           serio.str(string(" = "))
+           serio.dec(offsetPercentage)
 
      if(type == CENTER_OFFSET_TYPE)         
         offsetPercentage  := servosign * (position - sm#SERVO_CENTER) / sm#ONE_PERCENT_SERVO_THROW
@@ -1182,34 +1185,41 @@ PUB ServoTrimUsingStick(servoNum, servoTrimAddr, reverse, descStr, type)| servos
         offsetPercentage  := (position - sm#SERVO_MIN) / sm#ONE_PERCENT_SERVO_THROW
            
      if(serio.rxcheck <> -1)                        'A key hit will exit
+          StopReceiverAndServos                        
           serio.tx($D)                                       
           serio.str(string("Exiting servo adjust."))
           serio.tx($D)
           LONG[servoTrimAddr] := offsetPercentage   'Save new trim
-          StopReceiverAndServos
           QUIT
      utilities.Pause(100)
      
 
 PUB SwashTrimUsingStick   | tempTrim1, tempTrim2, tempTrim3
 
+  serio.tx($D)  
+  serio.str(string("Adjusting swashplate level,"))
+  serio.tx($D)    
+  serio.str(string("Use tx cyclic stick to level swashplate, "))
+  serio.tx($D)
+  serio.str(string("Or throttle stick to trim collective. "))
+  serio.tx($D)
+
+  serio.str(string("Hit a key when done"))
+  serio.tx($D)
+
   if(StartReceiverAndServos == -1)
       serio.str(string("Returning to menu."))
       serio.tx($D)
       RETURN
 
-  utilities.Pause(200)
+  if(PWMActive)
+     serio.tx($D)
+     serio.str(string("s1  s2  s3"))
+     serio.tx($D)
+     serio.str(string("-----------"))
+     serio.tx($D)
 
-  serio.tx($D)  
-  serio.str(string("Adjusting swashplate level,"))
-  serio.tx($D)    
-  serio.str(string("Use tx cyclic stick to level swashplate, hit key when done"))
-  serio.tx($D)
-  serio.tx($D)
-  serio.str(string("s1  s2  s3"))
-  serio.tx($D)
-  serio.str(string("-----------"))
-  serio.tx($D)
+  utilities.Pause(200)
 
   elevCenter := rxman.getElevator
   aileCenter := rxman.getAileron
@@ -1281,14 +1291,15 @@ PUB SwashTrimUsingStick   | tempTrim1, tempTrim2, tempTrim3
      tempTrim2 := getServo2Trim + phasedS2Correction/sm#ONE_PERCENT_SERVO_THROW
      tempTrim3 := getServo3Trim + phasedS3Correction/sm#ONE_PERCENT_SERVO_THROW
       
-      serio.tx(14)
-      serio.tx(0)               'CR, no LF
-      serio.tx(11)
-      serio.dec(tempTrim1)      'Display new trim values
-      serio.str(string("  "))
-      serio.dec(tempTrim2)
-      serio.str(string("  "))
-      serio.dec(tempTrim3)
+      if(PWMActive)                'If using non-satellite receiver, serial I/O won't interfere with rx input
+         serio.tx(14)              '  so we can display the trim values as they are being changed
+         serio.tx(0)               'go to beginning of same line and clear line to overwrite previous values
+         serio.tx(11)
+         serio.dec(tempTrim1)      'Display new trim values
+         serio.str(string("  "))
+         serio.dec(tempTrim2)
+         serio.str(string("  "))
+         serio.dec(tempTrim3)
       
       'Move servos to new centers using new trim values
           
@@ -1298,19 +1309,20 @@ PUB SwashTrimUsingStick   | tempTrim1, tempTrim2, tempTrim3
      
        'If a key is hit, save new trims and exit
        
-     if(serio.rxcheck <> -1)                     
+     if(serio.rxcheck <> -1)
+          StopReceiverAndServos                     
           serio.tx($D)                                       
           serio.str(string("Exiting swash adjust."))
           serio.tx($D)
           servo1Trim[activeModelIndex] := tempTrim1 
           servo2Trim[activeModelIndex] := tempTrim2
           servo3Trim[activeModelIndex] := tempTrim3
-          StopReceiverAndServos 
+  
           QUIT
     utilities.Pause(100) 
                  
    
-PRI ServoAutoSetup | response, sm_cog, PWMActive 
+PRI ServoAutoSetup | response, sm_cog
 
   sm.Stop
   sm_cog := sm.Start(@s1, @s2, @s3, @s4, @s5, GetPulseInterval, @PWMActive)  
