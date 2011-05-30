@@ -312,40 +312,6 @@ PUB CopyModelName(fm, tm) | index
  byte[@modelName[tm*4]][index]~
             
 PUB SetDefaults   | index
-            
-  'Set parameters to defaults
-  '----------------------------------------------------
-  '  Settings for various helis, assumes PhuBar2 is mounted
-  '  top-up and 4-pin connector facing to the right.  Otherwise,
-  '  the auto-setup features can be used to set servo and gyro
-  '  directions for Phubar2 or PhuBar3
-  '
-  '                 Honeybee    FireFox  FireFox  Trex 450Pro
-  '                -------------------------------------------
-  'pitchangularGain := 63       63        70
-  'pitchRateGain    := 21       21        25                  
-  'rollAngularGain  := 63       63        63
-  'rollRateGain     := 21       21        21                  
-  'flybarWeight      := 960      960       960
-  'phaseAngle       := 0        0        -45
-  'pulseInterval    := 10       10       10
-  'reversePitchGyro := FALSE    FALSE   FALSE
-  'reverseRollGyro  := TRUE     TRUE    TRUE
-  'servo1reverse    := TRUE     TRUE    TRUE
-  'servo2reverse    := FALSE    FALSE   FALSE
-  'servo3reverse    := FALSE    FALSE   FALSE
-  'servo1theta      := 0        -60      -60
-  'servo2theta      := -270     -180     -180
-  'servo3theta      := 0        -300     -300
-  'yawAngularGain   :=                    45       
-  'yawRateGain      :=                    45       
-  'reverseYawGyro   :=                  FALSE
-  'headingHoldDeadband :=               1800
-  'headingHoldActive   :=               FALSE
-  'swashRing         :=         50        50  
-  'collectiveLimit   :=         ???      ???
-  '
-  '----------------------------------------------------
          
   activeModelIndex   := 0                         'Can have 0-9 models, but default to 0
 
@@ -355,7 +321,7 @@ PUB SetDefaults   | index
      pitchRateGain[index]    := 20        ' 0 to 100 
      rollAngularGain[index]  := 60        ' 0 to 100 
      rollRateGain[index]     := 20        ' 0 to 100   
-     flybarWeight[index]     := 960        ' limit 1 to 300 percent 
+     flybarWeight[index]     := 50        ' limit 1 to 300 percent 
      phaseAngle[index]       := 0         ' limit from -90 to +90
      pulseInterval[index]    := 20        ' servo pulse interval
      gyroXAxisAssignment[index] := "R"    ' assign axes based on how the unit is
@@ -374,10 +340,10 @@ PUB SetDefaults   | index
      rollHiller[index]       := 15        ' Virtual flybar tilt limit             
      pitchHiller[index]      := 15        ' Virtual flybar tilt limit
      bell[index]             := 90        ' 1-200               
-     tailMaxServoPos[index]  := 50        ' 60-100% sets max limit point for tail servo throw
-     tailMinServoPos[index]  := 50        ' 0-40% sets min limit point for tail servo throw
-     collectiveFeedForward[index]  := 50  ' Feed-forward gain for collective compensation on yaw
-     gyroFilterFrequency[index] := 2      ' Low-pass filter frequency, 0=256hz, 1=188hz, 2=98hz,3=42hz,4=20hz,5=10hz,6=5hz
+     tailMaxServoPos[index]  := 75        ' 60-100% sets max limit point for tail servo throw
+     tailMinServoPos[index]  := 25        ' 0-40% sets min limit point for tail servo throw
+     collectiveFeedForward[index]  := 0  ' Feed-forward gain for collective compensation on yaw
+     gyroFilterFrequency[index] := 6      ' Low-pass filter frequency, 0=256hz, 1=188hz, 2=98hz,3=42hz,4=20hz,5=10hz,6=5hz
      gyroZAxisAssignment[index] := "Y"    ' Z axis is Yaw
      headingHoldDeadband[index] := 1600   ' 2% deadband
      flags[index] := %00000000
@@ -390,7 +356,7 @@ PUB SetDefaults   | index
   pitchRateGain[9]       := 21        
   rollAngularGain[9]     := 63      
   rollRateGain[9]        := 15         
-  flybarWeight[9]        := 960     
+  flybarWeight[9]        := 60     
   phaseAngle[9]          := -45       
   pulseInterval[9]       := 10       
   gyroXAxisAssignment[9] := "Y"       
@@ -406,12 +372,12 @@ PUB SetDefaults   | index
   servo2Trim[9]          := 0
   servo3Trim[9]          := 0
   tailServoTrim[9]       := 0 
-  rollHiller[9]          := 15                      
-  pitchHiller[9]         := 15         
+  rollHiller[9]          := 45                      
+  pitchHiller[9]         := 45         
   bell[9]                := 90                      
   tailMaxServoPos[9]     := 50        
   tailMinServoPos[9]        := 50       
-  collectiveFeedForward[9]  := 50
+  collectiveFeedForward[9]  := 0
   gyroFilterFrequency[9]    := 6         
   gyroZAxisAssignment[9]    := "P"
   headingHoldDeadband[9]    := 1600
@@ -1037,7 +1003,14 @@ PRI CopyModel   | fm, tm , tempstr
   swashRing[tm]            := swashRing[fm] 
   collectiveLimit[tm]      := collectiveLimit[fm]
   flags[tm]                := flags[fm] 
-  
+  rollHiller[tm]           := rollHiller[fm]
+  pitchHiller[tm]          := pitchHiller[fm]
+  bell[tm]                 := bell[fm]
+  tailMaxServoPos[tm]      := tailMaxServoPos[fm]
+  tailMinServoPos[tm]      := tailMinServoPos[fm] 
+  collectiveFeedForward[tm]:= collectiveFeedForward[fm]
+  gyroFilterFrequency[tm]  := gyroFilterFrequency[fm]
+   
   serio.tx($D)
   serio.str(string("Model "))
   serio.dec(fm + 1)
