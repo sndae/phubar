@@ -1,3 +1,6 @@
+#summary Tail tuning -rate mode thru HH, with or without collective compensation
+
+
 ===Tuning the tail when using the 3D version of the software, currently in the SatelliteReceiver branch in SVN.===  
 
 Rate mode with no collective compensation (collective feed-forward=0)
