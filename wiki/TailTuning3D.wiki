@@ -1,0 +1,16 @@
+===Tuning the tail when using the 3D version of the software, currently in the SatelliteReceiver branch in SVN.===  
+
+Rate mode with no collective compensation (collective feed-forward=0)
+  # Fly and trim rudder trim on tx until it hovers in trim
+  # Land and mark where the trim position is with a magic marker
+  # Recenter tx yaw trim
+ 
+Rate mode with collective compensation
+  # Set collective compensation at 50%
+  # Recheck yaw center position is on the mark at hover collective position.  It will move slightly 
+  # Readjust yaw center value until the mark lines up
+  # Test fly and do collective manuvers to see witch way the tail kicks.
+  # Adjust collective compensation until you get pretty much zero heading change with full collective (very headspeed dependant so setup for your average throttle curve)
+ 
+HH mode
+  # Turn on HH mode and test fly. Ajust HH gain as needed. You shouldn't see any weird behavior - it should lock the tail in nicely.
