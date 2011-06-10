@@ -18,7 +18,7 @@ PUB FlashLED
       dira[constants#STATUS_LED_PIN]~~  'Status LED set pin set for output
 
       outa[constants#STATUS_LED_PIN]~~
-      pause(5)
+      pause(250)
       outa[constants#STATUS_LED_PIN]~
 
 PUB SignalNFlashes(flashes)
