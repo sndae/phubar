@@ -1,3 +1,8 @@
+
+August 19, 2011
+
+Finally received an MPU-6050 from CDI.  
+
 May 28, 2011
 
 Renamed the wiki page "Parameters" to "Parameters2D" and added a new page "Parameters3D", created by mrbubbs on RCGroups.  The new page reflects a complete parameter list for the code in the satelliteReceiver branch in SVN. Eventually the 2D version will be less relevant as we fill in useable parameter values for the 3D version.
